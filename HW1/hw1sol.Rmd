@@ -32,6 +32,15 @@ sessionInfo()
 
 This exercise (and later in this course) uses the [MIMIC-IV data](https://mimic-iv.mit.edu), a freely accessible critical care database developed by the MIT Lab for Computational Physiology. Follow the instructions at <https://mimic.mit.edu/docs/gettingstarted/> to (1) complete the CITI `Data or Specimens Only Research` course and (2) obtain the PhysioNet credential for using the MIMIC-IV data. Display the verification links to your completion report and completion certificate here. (Hint: The CITI training takes a couple hours and the PhysioNet credentialing takes a couple days; do not leave it to the last minute.)
 
+**Solutions：** 
+
+Link to my completion report: https://www.citiprogram.org/verify/?k469a8ce9-0f72-4fb6-8767-33c9eeaf0a9a-40438263
+
+Link to my completion certificate:
+Completion Certificate:
+https://www.citiprogram.org/verify/?wcbf3112a-636f-46d1-85e8-31488931ef41-40438263
+
+
 ## Q3. Linux Shell Commands
 
 1. The `/mnt/mimiciv/1.0` folder on teaching server contains data sets from MIMIC-IV. Refer to the documentation <https://mimic.mit.edu/docs/iv/> for details of data files.  

@@ -211,6 +211,9 @@ pre code {
 <div id="q2.-data-ethics-training" class="section level2">
 <h2>Q2. Data ethics training</h2>
 <p>This exercise (and later in this course) uses the <a href="https://mimic-iv.mit.edu">MIMIC-IV data</a>, a freely accessible critical care database developed by the MIT Lab for Computational Physiology. Follow the instructions at <a href="https://mimic.mit.edu/docs/gettingstarted/" class="uri">https://mimic.mit.edu/docs/gettingstarted/</a> to (1) complete the CITI <code>Data or Specimens Only Research</code> course and (2) obtain the PhysioNet credential for using the MIMIC-IV data. Display the verification links to your completion report and completion certificate here. (Hint: The CITI training takes a couple hours and the PhysioNet credentialing takes a couple days; do not leave it to the last minute.)</p>
+<p><strong>Solutions：</strong></p>
+<p>Link to my completion report: <a href="https://www.citiprogram.org/verify/?k469a8ce9-0f72-4fb6-8767-33c9eeaf0a9a-40438263" class="uri">https://www.citiprogram.org/verify/?k469a8ce9-0f72-4fb6-8767-33c9eeaf0a9a-40438263</a></p>
+<p>Link to my completion certificate: Completion Certificate: <a href="https://www.citiprogram.org/verify/?wcbf3112a-636f-46d1-85e8-31488931ef41-40438263" class="uri">https://www.citiprogram.org/verify/?wcbf3112a-636f-46d1-85e8-31488931ef41-40438263</a></p>
 </div>
 <div id="q3.-linux-shell-commands" class="section level2">
 <h2>Q3. Linux Shell Commands</h2>
@@ -386,10 +389,10 @@ uniq -c</code></pre>
 <p>Explain what <code>wget -nc</code> does. Do <strong>not</strong> put this text file <code>pg42671.txt</code> in Git. Complete the following loop to tabulate the number of times each of the four characters is mentioned using Linux commands.</p>
 <p>‘wget-nc’ download pg42671.txt file into my HW1 folder from the URL address. -nc means –no-clobber If a file is downloaded more than once in the same directory, Wget’s behavior depends on a few options, including -nc. In certain cases, the local file will be clobbered, or overwritten, upon repeated download. In other cases it will be preserved.</p>
 <pre><code>```bash
-wget -nc http://www.gutenberg.org/cache/epub/42671/pg42671.txt
+   
 for char in Elizabeth Jane Lydia Darcy
 do
-  echo $char:
+  echo $char:grep pg42671.txt| head -10
   # some commands here
 done
 
@@ -398,9 +401,11 @@ done
 <li><p>What’s the difference between the following two commands?</p>
 <pre class="bash"><code>echo &#39;hello, world&#39; &gt; test1.txt</code></pre>
 <p>and</p>
-<pre class="bash"><code>echo &#39;hello, world&#39; &gt;&gt; test2.txt</code></pre></li>
+<pre class="bash"><code>echo &#39;hello, world&#39; &gt;&gt; test2.txt</code></pre>
+<p><strong>Solution</strong>: &gt; directs output from one commend to a file; &gt;&gt; appends output from one commend to a file.</p></li>
 <li><p>Using your favorite text editor (e.g., <code>vi</code>), type the following and save the file as <code>middle.sh</code>:</p>
-<pre class="bash"><code>#!/bin/sh
+<pre class="bash"><code>vi middle.sh
+#!/bin/sh
 # Select lines from the middle of a file.
 # Usage: bash middle.sh filename end_line num_lines
 head -n &quot;$2&quot; &quot;$1&quot; | tail -n &quot;$3&quot;</code></pre>
