@@ -55,21 +55,24 @@ Please, do **not** put these data files into Git; they are big. Do **not** copy 
 
 **Solution:** 
 
-Content of the folder 'core' is
+Why these data files are distributed as `.csv.gz` files instead of `.csv` is CSV is because, GZ is a CSV file compressed with gzip utility. 
+
+
+The folder 'core' includes the information about "patient stay information (i.e. admissions and transfers)". Content of the folder 'core' is shown below:
 ````{bash}
 ls -l /mnt/mimiciv/1.0/core
 ````
 
-Content of the folder 'hosp' is
+The folder 'hosp' includes the information about "hospital level data for patients: labs, micro, and electronic medication administration". Content of the folder 'hosp' is shown below:
 ```{bash}
 ls -l /mnt/mimiciv/1.0/hosp
 ```
     
-Content of the folder 'icu' is
+
+The folder 'icu' includes the information about "ICU level data. These are the event tables, and are identical in structure to MIMIC-III". Content of the folder 'icu' is shown below:
 ```{bash}
 ls -l /mnt/mimiciv/1.0/icu
 ```
-Why these data files are distributed as `.csv.gz` files instead of `.csv` is CSV. GZ is a CSV file compressed with gzip utility. 
 
 
     
