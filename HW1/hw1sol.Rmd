@@ -89,12 +89,17 @@ Searching inside the compressed file with zgrep.
 
 
 4. What's the output of following bash script?
-    ```{bash, eval=F}
+
+**Solution:**
+
+The output is shown below and it lists detailed contents of a directory.
+    ```{bash, eval=T}
     for datafile in /mnt/mimiciv/1.0/core/*.gz
       do
         ls -l $datafile
       done
     ```
+
 Display the number of lines in each data file using a similar loop.
     ```{bash, eval=T}
     for datafile in /mnt/mimiciv/1.0/core/*.gz
