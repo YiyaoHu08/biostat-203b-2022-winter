@@ -213,8 +213,10 @@ Using `chmod` make the file executable by the owner, and run
     ```{bash eval=FALSE}
     ./middle.sh pg42671.txt 20 5
     ```
-Explain the output. Explain the meaning of `"$1"`, `"$2"`, and `"$3"` in this shell script. Why do we need the first line of the shell script?
-"$" - is just a sign of the shell prompt, means that shell is ready to accept commands, you can understand it as a separator after which, you can interact with a shell. 
+Explain the output. Explain the meaning of `"$1"`, `"$2"`, and `"$3"` in this shell script. Why do we need the first line of the shell script? 
+
+The #!/bin/sh is used to tell bash what shell you want to use to parse your command.
+"$" - is just a sign of the shell prompt, means that shell is ready to accept commands. $1, $2, and $3 are the first three arguments of the shell script. 
 
 ## Q5. More fun with Linux
 

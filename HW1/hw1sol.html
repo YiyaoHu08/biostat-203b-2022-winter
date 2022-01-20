@@ -437,8 +437,9 @@ done
 head -n &quot;$2&quot; &quot;$1&quot; | tail -n &quot;$3&quot;</code></pre>
 <p>Using <code>chmod</code> make the file executable by the owner, and run</p>
 <pre class="bash"><code>./middle.sh pg42671.txt 20 5</code></pre>
-<p>Explain the output. Explain the meaning of <code>&quot;$1&quot;</code>, <code>&quot;$2&quot;</code>, and <code>&quot;$3&quot;</code> in this shell script. Why do we need the first line of the shell script? “$” - is just a sign of the shell prompt, means that shell is ready to accept commands, you can understand it as a separator after which, you can interact with a shell.</p></li>
+<p>Explain the output. Explain the meaning of <code>&quot;$1&quot;</code>, <code>&quot;$2&quot;</code>, and <code>&quot;$3&quot;</code> in this shell script. Why do we need the first line of the shell script?</p></li>
 </ol>
+<p>The #!/bin/sh is used to tell bash what shell you want to use to parse your command. “$” - is just a sign of the shell prompt, means that shell is ready to accept commands. $1, $2, and $3 are the first three arguments of the shell script.</p>
 </div>
 <div id="q5.-more-fun-with-linux" class="section level2">
 <h2>Q5. More fun with Linux</h2>
@@ -517,7 +518,7 @@ head -n &quot;$2&quot; &quot;$1&quot; | tail -n &quot;$3&quot;</code></pre>
 ## 24 25 26 27 28 29 30
 ```</code></pre>
 <pre class="bash"><code> date</code></pre>
-<pre><code>## Thu Jan 20 21:31:36 UTC 2022</code></pre>
+<pre><code>## Thu Jan 20 22:00:40 UTC 2022</code></pre>
 <pre class="bash"><code>    hostname
     arch</code></pre>
 <pre><code>## biostat-203b-teaching-server
@@ -530,7 +531,7 @@ head -n &quot;$2&quot; &quot;$1&quot; | tail -n &quot;$3&quot;</code></pre>
 <pre><code>## tomokiokuno0528 pts/1        2022-01-11 01:13 (42.166.94.34.bc.googleusercontent.com)
 ## tomokiokuno0528 pts/3        2022-01-10 23:43 (42.166.94.34.bc.googleusercontent.com)
 ## maschepps pts/6        2022-01-17 19:33 (74.213.228.243)
-##  21:31:36 up 17 days, 21:05,  3 users,  load average: 0.54, 0.19, 0.09
+##  22:00:40 up 17 days, 21:34,  3 users,  load average: 0.29, 0.27, 0.20
 ## USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
 ## tomokiok pts/1    42.166.94.34.bc. 11Jan22  9days  0.01s  0.01s -bash
 ## tomokiok pts/3    42.166.94.34.bc. 10Jan22  9days  1.10s  0.92s ssh -i /home/tomokiokuno0528/.ssh/id_rsa tomokiokuno0528@server.ucla-biostat-203b.com
