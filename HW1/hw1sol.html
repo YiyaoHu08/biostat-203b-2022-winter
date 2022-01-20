@@ -429,21 +429,133 @@ done
 <pre class="bash"><code>echo &#39;hello, world&#39; &gt; test1.txt</code></pre>
 <p>and</p>
 <pre class="bash"><code>echo &#39;hello, world&#39; &gt;&gt; test2.txt</code></pre>
-<p><strong>Solution</strong>: &gt; directs output from one commend to a file; &gt;&gt; appends output from one commend to a file.</p></li>
+<p><strong>Solution</strong>: &gt; directs output from one commend to a file, and this comman will replace the previous contents in the file &gt;&gt; appends output from one commend to a fill, it will add new content to the file under the orginal content.</p></li>
 <li><p>Using your favorite text editor (e.g., <code>vi</code>), type the following and save the file as <code>middle.sh</code>:</p>
-<pre class="bash"><code>vi middle.sh
-#!/bin/sh
+<pre class="bash"><code>#!/bin/sh
 # Select lines from the middle of a file.
 # Usage: bash middle.sh filename end_line num_lines
 head -n &quot;$2&quot; &quot;$1&quot; | tail -n &quot;$3&quot;</code></pre>
 <p>Using <code>chmod</code> make the file executable by the owner, and run</p>
 <pre class="bash"><code>./middle.sh pg42671.txt 20 5</code></pre>
-<p>Explain the output. Explain the meaning of <code>&quot;$1&quot;</code>, <code>&quot;$2&quot;</code>, and <code>&quot;$3&quot;</code> in this shell script. Why do we need the first line of the shell script?</p></li>
+<p>Explain the output. Explain the meaning of <code>&quot;$1&quot;</code>, <code>&quot;$2&quot;</code>, and <code>&quot;$3&quot;</code> in this shell script. Why do we need the first line of the shell script? “$” - is just a sign of the shell prompt, means that shell is ready to accept commands, you can understand it as a separator after which, you can interact with a shell.</p></li>
 </ol>
-<div id="q5.-more-fun-with-linux" class="section level3">
-<h3>Q5. More fun with Linux</h3>
-<p>Try following commands in Bash and interpret the results: <code>cal</code>, <code>cal 2021</code>, <code>cal 9 1752</code> (anything unusual?), <code>date</code>, <code>hostname</code>, <code>arch</code>, <code>uname -a</code>, <code>uptime</code>, <code>who am i</code>, <code>who</code>, <code>w</code>, <code>id</code>, <code>last | head</code>, <code>echo {con,pre}{sent,fer}{s,ed}</code>, <code>time sleep 5</code>, <code>history | tail</code>.</p>
 </div>
+<div id="q5.-more-fun-with-linux" class="section level2">
+<h2>Q5. More fun with Linux</h2>
+<p>Try following commands in Bash and interpret the results: <code>cal</code>, <code>cal 2021</code>, <code>cal 9 1752</code> (anything unusual?), <code>date</code>, <code>hostname</code>, <code>arch</code>, <code>uname -a</code>, <code>uptime</code>, <code>who am i</code>, <code>who</code>, <code>w</code>, <code>id</code>, <code>last | head</code>, <code>echo {con,pre}{sent,fer}{s,ed}</code>, <code>time sleep 5</code>, <code>history | tail</code>.</p>
+<p><strong>Solution:</strong></p>
+<p>‘Cal’ shows the calender for current month</p>
+<p>‘cal 2021’ shows the calender for all the 12 months in 2021</p>
+<p>‘cal 9 1752’ shows the calender for September in 1975; Something unusual is that month lack the days from 9/13/1752 to 9/23/1752.</p>
+<p>date: Look up today’s date and time</p>
+<p>hostname: It’s used to obtain the DNS(Domain Name System) name and set the system’s hostname or NIS(Network Information System) domain name.</p>
+<p>arch:It’s used to print the computer architecture.</p>
+<p>uname -a:It’s used to display basic information about the operating system and hardware. parameter a is used to reveal all the information</p>
+<p>uptime: It is used to find out how long the system is active (running).</p>
+<p>who am i:It displays the username of the current user when this command is invoked.</p>
+<p>who: it’s used to display the users currently logged in to your UNIX or Linux operating system.</p>
+<p>w: It’s used to show who is logged on and what they are doing.</p>
+<p>id: It’s is used to find out user and group names and numeric ID’s (UID or group ID) of the current user or any other user in the server.</p>
+<p>last | head:The last command in Linux is used to display the list of all the users logged in and out.The ahead command is used to display the first 10 results.</p>
+<p>echo {con,pre}{sent,fer}{s,ed}: It gives us the combination of all the possible words</p>
+<p>time sleep 5 :Sleep command is used to delay for a fixed amount of time during the execution of any script.</p>
+<p>history | tail: It is used to view the last 10th previously executed command.</p>
+<pre><code>```bash
+ cal
+ cal 2021
+ cal 9 1752
+```
+
+```
+##     January 2022    
+## Su Mo Tu We Th Fr Sa
+##                    1
+##  2  3  4  5  6  7  8
+##  9 10 11 12 13 14 15
+## 16 17 18 19 20 21 22
+## 23 24 25 26 27 28 29
+## 30 31
+##                                2021                               
+## 
+##        January               February                 March       
+## Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa
+##                 1  2       1  2  3  4  5  6       1  2  3  4  5  6
+##  3  4  5  6  7  8  9    7  8  9 10 11 12 13    7  8  9 10 11 12 13
+## 10 11 12 13 14 15 16   14 15 16 17 18 19 20   14 15 16 17 18 19 20
+## 17 18 19 20 21 22 23   21 22 23 24 25 26 27   21 22 23 24 25 26 27
+## 24 25 26 27 28 29 30   28                     28 29 30 31
+## 31
+##         April                   May                   June        
+## Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa
+##              1  2  3                      1          1  2  3  4  5
+##  4  5  6  7  8  9 10    2  3  4  5  6  7  8    6  7  8  9 10 11 12
+## 11 12 13 14 15 16 17    9 10 11 12 13 14 15   13 14 15 16 17 18 19
+## 18 19 20 21 22 23 24   16 17 18 19 20 21 22   20 21 22 23 24 25 26
+## 25 26 27 28 29 30      23 24 25 26 27 28 29   27 28 29 30
+##                        30 31
+##         July                  August                September     
+## Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa
+##              1  2  3    1  2  3  4  5  6  7             1  2  3  4
+##  4  5  6  7  8  9 10    8  9 10 11 12 13 14    5  6  7  8  9 10 11
+## 11 12 13 14 15 16 17   15 16 17 18 19 20 21   12 13 14 15 16 17 18
+## 18 19 20 21 22 23 24   22 23 24 25 26 27 28   19 20 21 22 23 24 25
+## 25 26 27 28 29 30 31   29 30 31               26 27 28 29 30
+## 
+##        October               November               December      
+## Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa
+##                 1  2       1  2  3  4  5  6             1  2  3  4
+##  3  4  5  6  7  8  9    7  8  9 10 11 12 13    5  6  7  8  9 10 11
+## 10 11 12 13 14 15 16   14 15 16 17 18 19 20   12 13 14 15 16 17 18
+## 17 18 19 20 21 22 23   21 22 23 24 25 26 27   19 20 21 22 23 24 25
+## 24 25 26 27 28 29 30   28 29 30               26 27 28 29 30 31
+## 31
+## 
+##    September 1752   
+## Su Mo Tu We Th Fr Sa
+##        1  2 14 15 16
+## 17 18 19 20 21 22 23
+## 24 25 26 27 28 29 30
+```</code></pre>
+<pre class="bash"><code> date</code></pre>
+<pre><code>## Thu Jan 20 21:31:36 UTC 2022</code></pre>
+<pre class="bash"><code>    hostname
+    arch</code></pre>
+<pre><code>## biostat-203b-teaching-server
+## x86_64</code></pre>
+<pre class="bash"><code>  uname -a</code></pre>
+<pre><code>## Linux biostat-203b-teaching-server 3.10.0-1160.49.1.el7.x86_64 #1 SMP Tue Nov 30 15:51:32 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux</code></pre>
+<pre class="bash"><code> who am i
+ who
+ w</code></pre>
+<pre><code>## tomokiokuno0528 pts/1        2022-01-11 01:13 (42.166.94.34.bc.googleusercontent.com)
+## tomokiokuno0528 pts/3        2022-01-10 23:43 (42.166.94.34.bc.googleusercontent.com)
+## maschepps pts/6        2022-01-17 19:33 (74.213.228.243)
+##  21:31:36 up 17 days, 21:05,  3 users,  load average: 0.54, 0.19, 0.09
+## USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+## tomokiok pts/1    42.166.94.34.bc. 11Jan22  9days  0.01s  0.01s -bash
+## tomokiok pts/3    42.166.94.34.bc. 10Jan22  9days  1.10s  0.92s ssh -i /home/tomokiokuno0528/.ssh/id_rsa tomokiokuno0528@server.ucla-biostat-203b.com
+## maschepp pts/6    74.213.228.243   Mon19    3days  0.03s  0.03s -bash</code></pre>
+<pre class="bash"><code>     id</code></pre>
+<pre><code>## uid=1014(ionahu08) gid=1016(ionahu08) groups=1016(ionahu08) context=system_u:system_r:initrc_t:s0</code></pre>
+<pre class="bash"><code>last | head</code></pre>
+<pre><code>## blei001  pts/7        cpe-76-171-0-146 Thu Jan 20 06:38 - 06:41  (00:02)    
+## jiahaoti pts/14       104-54-32-28.lig Thu Jan 20 02:14 - 04:59  (02:44)    
+## huazhou  pts/30       149.142.103.91   Wed Jan 19 02:23 - 02:32  (00:09)    
+## lillyhua pts/20       64.201.127.119   Wed Jan 19 01:13 - 03:56  (02:43)    
+## lillyhua pts/20       64.201.127.119   Wed Jan 19 01:10 - 01:12  (00:01)    
+## lillyhua pts/20       64.201.127.119   Wed Jan 19 00:24 - 01:10  (00:46)    
+## sharonfe pts/19       38.15.211.52     Wed Jan 19 00:20 - 00:52  (00:31)    
+## yuyuanli pts/18       149.142.103.176  Wed Jan 19 00:20 - 02:01  (01:41)    
+## inclassd pts/17       149.142.103.176  Wed Jan 19 00:20 - 02:32  (02:11)    
+## jiahaoti pts/16       104-54-32-28.lig Wed Jan 19 00:20 - 02:00  (01:40)</code></pre>
+<pre class="bash"><code> echo {con,pre}{sent,fer}{s,ed}</code></pre>
+<pre><code>## consents consented confers confered presents presented prefers prefered</code></pre>
+<pre class="bash"><code> time sleep 5</code></pre>
+<pre><code>## 
+## real 0m5.001s
+## user 0m0.000s
+## sys  0m0.001s</code></pre>
+<pre class="bash"><code> history |tail</code></pre>
 </div>
 
 
