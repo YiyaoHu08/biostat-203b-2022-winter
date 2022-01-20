@@ -118,7 +118,7 @@ zcat  /mnt/mimiciv/1.0/core/admissions.csv.gz | head -5
     ```
   
     
-Number of rows are in this data file?
+Number of rows are in this data file：
     ```{bash, eval=T}
 zcat /mnt/mimiciv/1.0/core/admissions.csv.gz| wc -l 
     ```
@@ -181,14 +181,13 @@ Explain what `wget -nc` does. Do **not** put this text file `pg42671.txt` in Git
            certain cases, the local file will be clobbered, or overwritten,
            upon repeated download.  In other cases it will be preserved.
 
-    ```{bash, eval=FALSE}
-   
-    for char in Elizabeth Jane Lydia Darcy
+    ```{bash, eval=T}
+
+for char in Elizabeth Jane Lydia Darcy
     do
-      echo $char:grep pg42671.txt| head -10
-      # some commands here
+      echo $char:
+      cat pg42671.txt|grep -n $char|wc -l
     done
-    
     ```
 
 2. What's the difference between the following two commands?

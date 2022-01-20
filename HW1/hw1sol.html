@@ -325,7 +325,7 @@ zcat  /mnt/mimiciv/1.0/core/admissions.csv.gz | head -5
 ## 11989120,21965160,2147-01-14 09:00:00,2147-01-17 14:25:00,,ELECTIVE,,HOME,Other,ENGLISH,,UNKNOWN,,,0
 ## 17817079,24709883,2165-12-27 17:33:00,2165-12-31 21:18:00,,ELECTIVE,,HOME,Other,ENGLISH,,OTHER,,,0
 ```</code></pre>
-<p>Number of rows are in this data file?</p>
+<p>Number of rows are in this data file：</p>
 <pre><code>```bash
 zcat /mnt/mimiciv/1.0/core/admissions.csv.gz| wc -l 
 ```
@@ -406,13 +406,23 @@ uniq -c</code></pre>
 <p>Explain what <code>wget -nc</code> does. Do <strong>not</strong> put this text file <code>pg42671.txt</code> in Git. Complete the following loop to tabulate the number of times each of the four characters is mentioned using Linux commands.</p>
 <p>‘wget-nc’ download pg42671.txt file into my HW1 folder from the URL address. -nc means –no-clobber If a file is downloaded more than once in the same directory, Wget’s behavior depends on a few options, including -nc. In certain cases, the local file will be clobbered, or overwritten, upon repeated download. In other cases it will be preserved.</p>
 <pre><code>```bash
-   
+
 for char in Elizabeth Jane Lydia Darcy
 do
-  echo $char:grep pg42671.txt| head -10
-  # some commands here
+  echo $char:
+  cat pg42671.txt|grep -n $char|wc -l
 done
+```
 
+```
+## Elizabeth:
+## 633
+## Jane:
+## 290
+## Lydia:
+## 166
+## Darcy:
+## 414
 ```</code></pre>
 <ol start="2" style="list-style-type: decimal">
 <li><p>What’s the difference between the following two commands?</p>
