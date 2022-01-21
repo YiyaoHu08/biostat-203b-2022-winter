@@ -263,7 +263,7 @@ history | tail: It is used to view the last 10th previously executed command.
     ```
 
     ```{bash}
-    date
+    date 
     ```
 
     ```{bash}
