@@ -6,12 +6,12 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+  knitr::opts_chunk$set(echo = TRUE)
 ```
 
 Display machine information for reproducibility:
 ```{r, eval=T}
-sessionInfo()
+  sessionInfo()
 ```
 
 ## Q1. Git/GitHub
@@ -45,7 +45,7 @@ https://www.citiprogram.org/verify/?wcbf3112a-636f-46d1-85e8-31488931ef41-404382
 
 1. The `/mnt/mimiciv/1.0` folder on teaching server contains data sets from MIMIC-IV. Refer to the documentation <https://mimic.mit.edu/docs/iv/> for details of data files.  
     ```{bash}
-ls -l /mnt/mimiciv/1.0
+    ls -l /mnt/mimiciv/1.0
     ```
 Please, do **not** put these data files into Git; they are big. Do **not** copy them into your directory. Do **not** decompress the gz data files. These create unnecessary big files on storage and are not big data friendly practices. Just read from the data folder `/mnt/mimiciv/1.0` directly in following exercises. 
 
@@ -59,20 +59,20 @@ Why these data files are distributed as `.csv.gz` files instead of `.csv` is CSV
 
 
 The folder 'core' includes the information about "patient stay information (i.e. admissions and transfers)". Content of the folder 'core' is shown below:
-````{bash}
-ls -l /mnt/mimiciv/1.0/core
-````
+    ````{bash}
+    ls -l /mnt/mimiciv/1.0/core
+    ````
 
 The folder 'hosp' includes the information about "hospital level data for patients: labs, micro, and electronic medication administration". Content of the folder 'hosp' is shown below:
-```{bash}
-ls -l /mnt/mimiciv/1.0/hosp
-```
+    ```{bash}
+    ls -l /mnt/mimiciv/1.0/hosp
+    ```
     
 
 The folder 'icu' includes the information about "ICU level data. These are the event tables, and are identical in structure to MIMIC-III". Content of the folder 'icu' is shown below:
-```{bash}
-ls -l /mnt/mimiciv/1.0/icu
-```
+    ```{bash}
+    ls -l /mnt/mimiciv/1.0/icu
+    ```
 
 
     
@@ -104,7 +104,7 @@ Display the number of lines in each data file using a similar loop.
     ```{bash, eval=T}
     for datafile in /mnt/mimiciv/1.0/core/*.gz
       do
-        zcat $datafile |wc -l
+        zcat $datafile | wc -l
       done      
     ```
 
@@ -114,20 +114,20 @@ Display the number of lines in each data file using a similar loop.
 
 The first five lines of `admissions.csv.gz`.
     ```{bash, eval=T}
-zcat  /mnt/mimiciv/1.0/core/admissions.csv.gz | head -5
+    zcat  /mnt/mimiciv/1.0/core/admissions.csv.gz | head -5
     ```
   
     
-Number of rows are in this data file：
+Number of rows (without header) are in this data file：
     ```{bash, eval=T}
-zcat /mnt/mimiciv/1.0/core/admissions.csv.gz| wc -l 
+    zcat /mnt/mimiciv/1.0/core/admissions.csv.gz| tail -n +2| wc -l
     ```
 
 
-Number of unique patients:
+Number of unique patients (without header):
     ```{bash, eval=T}
-zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '{print $1}' |sort|
-uniq|wc -l 
+    zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '{print $1}'| 
+    tail -n +2| sort | uniq | wc -l
     ```
 
 
@@ -137,28 +137,28 @@ uniq|wc -l
 
 1) Possible values and corresponding counts of "admission_type" (field number=6)
     ```{bash, eval=T}
-zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '{print $6}' |sort|
+    zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '{print $6}' |sort|
 uniq -c
     ```
 
 
 2) Possible values and corresponding counts of "admission_location" (field number=7)
     ```{bash, eval=T}
-zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '{print $7}' |sort|
+    zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '{print $7}' |sort|
 uniq -c
     ```
     
 
 3) Possible values and corresponding counts of "insurance" (field number=9)
     ```{bash, eval=T}
-zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '{print $9}' |sort|
+    zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '{print $9}' |sort|
 uniq -c
     ```
 
 
 4) Possible values and corresponding counts of "ethnicity" (field number=12)
     ```{bash, eval=T}
-zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '{print $12}' |sort|
+    zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '{print $12}' |sort|
 uniq -c
     ```
 
@@ -182,8 +182,7 @@ Explain what `wget -nc` does. Do **not** put this text file `pg42671.txt` in Git
            upon repeated download.  In other cases it will be preserved.
 
     ```{bash, eval=T}
-
-for char in Elizabeth Jane Lydia Darcy
+    for char in Elizabeth Jane Lydia Darcy
     do
       echo $char:
       cat pg42671.txt|grep -n $char|wc -l
@@ -199,8 +198,9 @@ for char in Elizabeth Jane Lydia Darcy
     echo 'hello, world' >> test2.txt
     ```
 **Solution**:
-> directs output from one commend to a file, and this comman will replace the previous contents in the file
->> appends output from one commend to a fill, it will add new content to the file under the orginal content. 
+'>' directs output from one commend to a file, and this comman will replace the previous contents in the file
+
+'>>' appends output from one commend to a fill, it will add new content to the file under the orginal content. 
 
 3. Using your favorite text editor (e.g., `vi`), type the following and save the file as `middle.sh`:
     ```{bash eval=FALSE}
@@ -262,39 +262,42 @@ history | tail: It is used to view the last 10th previously executed command.
      cal 9 1752
     ```
 
-```{bash}
- date
-```
+    ```{bash}
+    date
+    ```
 
-```{bash}
+    ```{bash}
     hostname
     arch
-```
+    ```
 
-```{bash}
-  uname -a
-```
-```{bash}
- who am i
- who
- w
-```
+    ```{bash}
+    uname -a
+    ```
+    
+    ```{bash}
+   who am i
+   who
+   w
+    ```
 
-```{bash}
+    ```{bash}
      id
-```
-```{bash}
-last | head
-```
-```{bash}
- echo {con,pre}{sent,fer}{s,ed}
-```
+    ```
+    
+    ```{bash}
+    last | head
+    ```
+    
+    ```{bash}
+   echo {con,pre}{sent,fer}{s,ed}
+    ```
 
-```{bash}
- time sleep 5
-```
+    ```{bash}
+    time sleep 5
+    ```
 
-```{bash}
- history |tail
-```
+    ```{bash}
+    history |tail
+    ```
 
