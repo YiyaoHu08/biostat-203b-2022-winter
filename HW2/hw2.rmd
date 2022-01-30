@@ -50,7 +50,7 @@ Read.csv takes 36.805s, read_csv takes 3.175s, and fread takes 1.513s. Fread is 
 
 ```{r}
 system.time(read.csv(str_c(mimic_path, "/core/admissions.csv.gz")))
-typeof(read.csv(str_c(mimic_path, "/core/admissions.csv.gz")))
+typeof(read.csv(str_c(mimic_path, "/core/admissions.csv.gz"))) 
 ```
 ```{r}
 system.time(read_csv(str_c(mimic_path, "/core/admissions.csv.gz")))
