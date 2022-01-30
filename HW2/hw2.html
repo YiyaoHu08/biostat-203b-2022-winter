@@ -222,50 +222,88 @@ if (str_detect(os, &quot;Linux&quot;)) {
 <p>In this exercise, we use tidyverse (ggpot2, dplyr, etc) to explore the <a href="https://mimic.mit.edu/docs/iv/">MIMIC-IV</a> data introduced in <a href="https://ucla-biostat-203b.github.io/2022winter/hw/hw1/hw1.html">homework 1</a> and to build a cohort of ICU stays.</p>
 <pre class="r"><code># tree -s -L 2 /Users/huazhou/Documents/Box\ Sync/MIMIC/mimic-iv-1.0
 system(str_c(&quot;tree -s -L 2 &quot;, shQuote(mimic_path)), intern = TRUE)</code></pre>
-<pre><code>##  [1] &quot;/mnt/mimiciv/1.0&quot;                                
-##  [2] &quot;├── [       4096]  core&quot;                         
-##  [3] &quot;│   ├── [   17208966]  admissions.csv.gz&quot;        
-##  [4] &quot;│   ├── [        606]  index.html&quot;               
-##  [5] &quot;│   ├── [    2955582]  patients.csv.gz&quot;          
-##  [6] &quot;│   └── [   53014503]  transfers.csv.gz&quot;         
-##  [7] &quot;├── [       4096]  hosp&quot;                         
-##  [8] &quot;│   ├── [     430049]  d_hcpcs.csv.gz&quot;           
-##  [9] &quot;│   ├── [   29531152]  diagnoses_icd.csv.gz&quot;     
-## [10] &quot;│   ├── [     863239]  d_icd_diagnoses.csv.gz&quot;   
-## [11] &quot;│   ├── [     579998]  d_icd_procedures.csv.gz&quot;  
-## [12] &quot;│   ├── [      14898]  d_labitems.csv.gz&quot;        
-## [13] &quot;│   ├── [   11684062]  drgcodes.csv.gz&quot;          
-## [14] &quot;│   ├── [  515763427]  emar.csv.gz&quot;              
-## [15] &quot;│   ├── [  476252563]  emar_detail.csv.gz&quot;       
-## [16] &quot;│   ├── [    2098831]  hcpcsevents.csv.gz&quot;       
-## [17] &quot;│   ├── [       2325]  index.html&quot;               
-## [18] &quot;│   ├── [ 2091865786]  labevents.csv.gz&quot;         
-## [19] &quot;│   ├── [   99133381]  microbiologyevents.csv.gz&quot;
-## [20] &quot;│   ├── [  422874088]  pharmacy.csv.gz&quot;          
-## [21] &quot;│   ├── [  501381155]  poe.csv.gz&quot;               
-## [22] &quot;│   ├── [   24020923]  poe_detail.csv.gz&quot;        
-## [23] &quot;│   ├── [  367041717]  prescriptions.csv.gz&quot;     
-## [24] &quot;│   ├── [    7750325]  procedures_icd.csv.gz&quot;    
-## [25] &quot;│   └── [    9565293]  services.csv.gz&quot;          
-## [26] &quot;├── [       4096]  icu&quot;                          
-## [27] &quot;│   ├── [ 2350783547]  chartevents.csv.gz&quot;       
-## [28] &quot;│   ├── [   43296273]  datetimeevents.csv.gz&quot;    
-## [29] &quot;│   ├── [      55917]  d_items.csv.gz&quot;           
-## [30] &quot;│   ├── [    2848628]  icustays.csv.gz&quot;          
-## [31] &quot;│   ├── [       1103]  index.html&quot;               
-## [32] &quot;│   ├── [  352443512]  inputevents.csv.gz&quot;       
-## [33] &quot;│   ├── [   37095672]  outputevents.csv.gz&quot;      
-## [34] &quot;│   └── [   20567368]  procedureevents.csv.gz&quot;   
-## [35] &quot;├── [        797]  index.html&quot;                   
-## [36] &quot;├── [       2518]  LICENSE.txt&quot;                  
-## [37] &quot;└── [       2459]  SHA256SUMS.txt&quot;               
-## [38] &quot;&quot;                                                
-## [39] &quot;3 directories, 33 files&quot;</code></pre>
+<pre><code>##  [1] &quot;/mnt/mimiciv/1.0&quot;                                         
+##  [2] &quot;├── [       4096]  core&quot;                                  
+##  [3] &quot;│   ├── [   17208966]  admissions.csv.gz&quot;                 
+##  [4] &quot;│   ├── [        606]  index.html&quot;                        
+##  [5] &quot;│   ├── [    2955582]  patients.csv.gz&quot;                   
+##  [6] &quot;│   └── [   53014503]  transfers.csv.gz&quot;                  
+##  [7] &quot;├── [       4096]  hosp&quot;                                  
+##  [8] &quot;│   ├── [     430049]  d_hcpcs.csv.gz&quot;                    
+##  [9] &quot;│   ├── [   29531152]  diagnoses_icd.csv.gz&quot;              
+## [10] &quot;│   ├── [     863239]  d_icd_diagnoses.csv.gz&quot;            
+## [11] &quot;│   ├── [     579998]  d_icd_procedures.csv.gz&quot;           
+## [12] &quot;│   ├── [      14898]  d_labitems.csv.gz&quot;                 
+## [13] &quot;│   ├── [   11684062]  drgcodes.csv.gz&quot;                   
+## [14] &quot;│   ├── [  515763427]  emar.csv.gz&quot;                       
+## [15] &quot;│   ├── [  476252563]  emar_detail.csv.gz&quot;                
+## [16] &quot;│   ├── [    2098831]  hcpcsevents.csv.gz&quot;                
+## [17] &quot;│   ├── [       2325]  index.html&quot;                        
+## [18] &quot;│   ├── [ 2091865786]  labevents.csv.gz&quot;                  
+## [19] &quot;│   ├── [  171624288]  labevents_filtered_itemid.csv.gz&quot;  
+## [20] &quot;│   ├── [   99133381]  microbiologyevents.csv.gz&quot;         
+## [21] &quot;│   ├── [  422874088]  pharmacy.csv.gz&quot;                   
+## [22] &quot;│   ├── [  501381155]  poe.csv.gz&quot;                        
+## [23] &quot;│   ├── [   24020923]  poe_detail.csv.gz&quot;                 
+## [24] &quot;│   ├── [  367041717]  prescriptions.csv.gz&quot;              
+## [25] &quot;│   ├── [    7750325]  procedures_icd.csv.gz&quot;             
+## [26] &quot;│   └── [    9565293]  services.csv.gz&quot;                   
+## [27] &quot;├── [       4096]  icu&quot;                                   
+## [28] &quot;│   ├── [ 2350783547]  chartevents.csv.gz&quot;                
+## [29] &quot;│   ├── [  110272408]  chartevents_filtered_itemid.csv.gz&quot;
+## [30] &quot;│   ├── [   43296273]  datetimeevents.csv.gz&quot;             
+## [31] &quot;│   ├── [      55917]  d_items.csv.gz&quot;                    
+## [32] &quot;│   ├── [    2848628]  icustays.csv.gz&quot;                   
+## [33] &quot;│   ├── [       1103]  index.html&quot;                        
+## [34] &quot;│   ├── [  352443512]  inputevents.csv.gz&quot;                
+## [35] &quot;│   ├── [   37095672]  outputevents.csv.gz&quot;               
+## [36] &quot;│   └── [   20567368]  procedureevents.csv.gz&quot;            
+## [37] &quot;├── [        797]  index.html&quot;                            
+## [38] &quot;├── [       2518]  LICENSE.txt&quot;                           
+## [39] &quot;└── [       2459]  SHA256SUMS.txt&quot;                        
+## [40] &quot;&quot;                                                         
+## [41] &quot;3 directories, 35 files&quot;</code></pre>
 <div id="q1.-read.csv-base-r-vs-read_csv-tidyverse-vs-fread-data.table" class="section level2">
 <h2>Q1. <code>read.csv</code> (base R) vs <code>read_csv</code> (tidyverse) vs <code>fread</code> (data.table)</h2>
 <p>There are quite a few utilities in R for reading plain text data files. Let us test the speed of reading a moderate sized compressed csv file, <code>admissions.csv.gz</code>, by three programs: <code>read.csv</code> in base R, <code>read_csv</code> in tidyverse, and <code>fread</code> in the popular data.table package.</p>
 <p>Which function is fastest? Is there difference in the (default) parsed data types? (Hint: R function <code>system.time</code> measures run times.)</p>
 <p>For later questions, we stick to the tidyverse.</p>
+<p><strong>Solutions:</strong></p>
+<p>Read.csv takes 36.805s, read_csv takes 3.175s, and fread takes 1.513s. Fread is the fastest among these three.</p>
+<pre class="r"><code>system.time(read.csv(str_c(mimic_path, &quot;/core/admissions.csv.gz&quot;)))</code></pre>
+<pre><code>##    user  system elapsed 
+##  39.410   0.239  39.659</code></pre>
+<pre class="r"><code>a&lt;-read.csv(str_c(mimic_path, &quot;/core/admissions.csv.gz&quot;))
+typeof(a)</code></pre>
+<pre><code>## [1] &quot;list&quot;</code></pre>
+<pre class="r"><code>system.time(read_csv(str_c(mimic_path, &quot;/core/admissions.csv.gz&quot;)))</code></pre>
+<pre><code>## Rows: 523740 Columns: 15</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr  (7): admission_type, admission_location, discharge_location, insurance,...
+## dbl  (3): subject_id, hadm_id, hospital_expire_flag
+## dttm (5): admittime, dischtime, deathtime, edregtime, edouttime</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre><code>##    user  system elapsed 
+##   3.488   0.269   2.164</code></pre>
+<pre class="r"><code>typeof(read_csv(str_c(mimic_path, &quot;/core/admissions.csv.gz&quot;)))</code></pre>
+<pre><code>## Rows: 523740 Columns: 15</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr  (7): admission_type, admission_location, discharge_location, insurance,...
+## dbl  (3): subject_id, hadm_id, hospital_expire_flag
+## dttm (5): admittime, dischtime, deathtime, edregtime, edouttime</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre><code>## [1] &quot;list&quot;</code></pre>
+<pre class="r"><code>system.time(fread(str_c(mimic_path, &quot;/core/admissions.csv.gz&quot;)))</code></pre>
+<pre><code>##    user  system elapsed 
+##   1.370   0.099   0.827</code></pre>
+<pre class="r"><code>typeof(fread(str_c(mimic_path, &quot;/core/admissions.csv.gz&quot;)))</code></pre>
+<pre><code>## [1] &quot;list&quot;</code></pre>
 </div>
 <div id="q2.-icu-stays" class="section level2">
 <h2>Q2. ICU stays</h2>

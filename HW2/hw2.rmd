@@ -44,6 +44,24 @@ Which function is fastest? Is there difference in the (default) parsed data type
 
 For later questions, we stick to the tidyverse.
 
+**Solutions:**
+
+Read.csv takes 36.805s, read_csv takes 3.175s, and fread takes 1.513s. Fread is the fastest among these three. 
+
+```{r}
+system.time(read.csv(str_c(mimic_path, "/core/admissions.csv.gz")))
+typeof(read.csv(str_c(mimic_path, "/core/admissions.csv.gz")))
+```
+```{r}
+system.time(read_csv(str_c(mimic_path, "/core/admissions.csv.gz")))
+typeof(read_csv(str_c(mimic_path, "/core/admissions.csv.gz")))
+```
+
+```{r}
+system.time(fread(str_c(mimic_path, "/core/admissions.csv.gz")))
+typeof(fread(str_c(mimic_path, "/core/admissions.csv.gz")))
+```
+
 ## Q2. ICU stays
 
 `icustays.csv.gz` (<https://mimic.mit.edu/docs/iv/modules/icu/icustays/>) contains data about Intensive Care Units (ICU) stays. The first 10 lines are
