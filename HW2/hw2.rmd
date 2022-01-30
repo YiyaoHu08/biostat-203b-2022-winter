@@ -10,7 +10,7 @@ output:
 
 Display machine information for reproducibility:
 ```{r}
-sessionInfo()
+sessionInfo() 
 ```
 
 ```{r setup, message=F}
