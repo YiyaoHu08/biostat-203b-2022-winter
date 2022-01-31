@@ -125,16 +125,61 @@ system(
 ```
 
 1. Import `admissions.csv.gz` as a tibble `admissions_tble`.
+```{r}
+admissions_tble <- as_tibble(read_csv(str_c(mimic_path, "/core/admissions.csv.gz")))
+```
 
 2. Let's only keep the admissions that have a match in `icustays_tble` according to `subject_id` and `hadmi_id`.
+```{r}
+#semi_join: Keeps the rows in x that have a match in y
+icubyid <- group_by(icustays_tble,"subject_id","hadmi_id")
+admbyid <-group_by(admissions_tble,"subject_id","hadmi_id")
+matchid<-semi_join(admbyid,icubyid)
+head(matchid)
+
+```
+
 
 3. Summarize the following variables by graphics. 
 
 - admission year  
+```{r}
+library(ggplot2)
+admissions_tble$Year<-year(admissions_tble$admittime)
+ggplot(data=admissions_tble) +
+  geom_bar(mapping = aes(x=Year))
+```
+
 - admission month  
+```{r}
+admissions_tble$Month<-month(admissions_tble$admittime)
+ggplot(data=admissions_tble) +
+  geom_bar(mapping = aes(x=Month)) +
+  scale_x_continuous(breaks = seq(1, 12, 1))
+```
+
+
 - admission month day  
+```{r}
+admissions_tble$monthday<-mday(admissions_tble$admittime)
+ggplot(data=admissions_tble) +
+  geom_bar(mapping = aes(x=monthday)) +
+  scale_x_continuous(breaks = seq(1, 31, 1))
+```
 - admission week day  
-- admission hour (anything unusual?)  
+```{r}
+admissions_tble$weekday<-wday(admissions_tble$admittime)
+ggplot(data=admissions_tble) +
+  geom_bar(mapping = aes(x=weekday)) +
+  scale_x_continuous(breaks = seq(1, 7, 1))
+```
+- admission hour (anything unusual?)
+```{r}
+admissions_tble$hour<-hour(admissions_tble$admittime)
+ggplot(data=admissions_tble) +
+  geom_bar(mapping = aes(x=hour)) +
+  scale_x_continuous(breaks = seq(0, 23, 1))
+```
 
 ## Q4. `patients` data
 
