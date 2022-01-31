@@ -184,7 +184,7 @@ pre code {
 </div>
 
 <p>Display machine information for reproducibility:</p>
-<pre class="r"><code>sessionInfo()</code></pre>
+<pre class="r"><code>sessionInfo() </code></pre>
 <pre><code>## R version 3.6.0 (2019-04-26)
 ## Platform: x86_64-redhat-linux-gnu (64-bit)
 ## Running under: CentOS Linux 7 (Core)
@@ -272,9 +272,8 @@ system(str_c(&quot;tree -s -L 2 &quot;, shQuote(mimic_path)), intern = TRUE)</co
 <p>Read.csv takes 36.805s, read_csv takes 3.175s, and fread takes 1.513s. Fread is the fastest among these three.</p>
 <pre class="r"><code>system.time(read.csv(str_c(mimic_path, &quot;/core/admissions.csv.gz&quot;)))</code></pre>
 <pre><code>##    user  system elapsed 
-##  39.410   0.239  39.659</code></pre>
-<pre class="r"><code>a&lt;-read.csv(str_c(mimic_path, &quot;/core/admissions.csv.gz&quot;))
-typeof(a)</code></pre>
+##  40.458   0.264  40.740</code></pre>
+<pre class="r"><code>typeof(read.csv(str_c(mimic_path, &quot;/core/admissions.csv.gz&quot;))) </code></pre>
 <pre><code>## [1] &quot;list&quot;</code></pre>
 <pre class="r"><code>system.time(read_csv(str_c(mimic_path, &quot;/core/admissions.csv.gz&quot;)))</code></pre>
 <pre><code>## Rows: 523740 Columns: 15</code></pre>
@@ -327,10 +326,42 @@ typeof(a)</code></pre>
 ##  [9] &quot;15914763,28906020,36909804,Trauma SICU (TSICU),Trauma SICU (TSICU),2176-12-14 12:00:00,2176-12-17 11:47:01,2.9909837962962964&quot; 
 ## [10] &quot;16256226,20013290,39289362,Neuro Stepdown,Neuro Stepdown,2150-12-20 16:09:08,2150-12-21 14:58:40,0.9510648148148149&quot;</code></pre>
 <ol style="list-style-type: decimal">
-<li><p>Import <code>icustatys.csv.gz</code> as a tibble <code>icustays_tble</code>.</p></li>
-<li><p>How many unique <code>subject_id</code>? Can a <code>subject_id</code> have multiple ICU stays?</p></li>
-<li><p>For each <code>subject_id</code>, let’s only keep the first ICU stay in the tibble <code>icustays_tble</code>.</p></li>
+<li>Import <code>icustatys.csv.gz</code> as a tibble <code>icustays_tble</code>.</li>
 </ol>
+<pre class="r"><code>icustays_tble &lt;- as_tibble(read_csv(str_c(mimic_path, &quot;/icu/icustays.csv.gz&quot;)))</code></pre>
+<pre><code>## Rows: 76540 Columns: 8</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr  (2): first_careunit, last_careunit
+## dbl  (4): subject_id, hadm_id, stay_id, los
+## dttm (2): intime, outtime</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>How many unique <code>subject_id</code>? Can a <code>subject_id</code> have multiple ICU stays? <strong>Solution:</strong></li>
+</ol>
+<p>There are 53,150 unique ‘subject_id’ and 76,540 unique ‘stay_id’. So there must be some “subject_id” with more than one ICU stays.</p>
+<pre class="r"><code>head(icustays_tble)
+summary(icustays_tble)
+str(icustays_tble)</code></pre>
+<pre class="r"><code># Respective counts of subject_ID &amp; stay_id
+count(distinct(icustays_tble, subject_id))</code></pre>
+<pre><code>## # A tibble: 1 × 1
+##       n
+##   &lt;int&gt;
+## 1 53150</code></pre>
+<pre class="r"><code>count(distinct(icustays_tble, stay_id))</code></pre>
+<pre><code>## # A tibble: 1 × 1
+##       n
+##   &lt;int&gt;
+## 1 76540</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>For each <code>subject_id</code>, let’s only keep the first ICU stay in the tibble <code>icustays_tble</code>.</li>
+</ol>
+<pre class="r"><code># only the first suject_id will be kept
+by_id &lt;- arrange(icustays_tble, subject_id) %&gt;%
+  group_by(subject_id) %&gt;% distinct(subject_id, .keep_all = TRUE)</code></pre>
 </div>
 <div id="q3.-admission-data" class="section level2">
 <h2>Q3. <code>admission</code> data</h2>
