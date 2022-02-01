@@ -248,12 +248,68 @@ system(
 
 1. Find how many rows are in `labevents.csv.gz`.
 
+**Solution:**
+
+There are 30,198,826 rows in this data set.
+```{r}
+labevents_tble <- as_tibble(read_csv(str_c(mimic_path,"/hosp/labevents.csv.gz"),
+                   col_select = c("subject_id","itemid,valuenum","charttime")),
+                   lazy = TRUE)
+str(labevents_tble)
+```
+
+
 2. We are interested in the lab measurements of creatinine (50912), potassium (50971), sodium (50983), chloride (50902), bicarbonate (50882), hematocrit (51221), white blood cell count (51301), glucose (50931), magnesium (50960), and calcium (50893). Retrieve a subset of `labevents.csv.gz` only containing these items for the patients in `icustays_tble` as a tibble `labevents_tble`. 
 
     Hint: `labevents.csv.gz` is a data file too big to be read in by the `read_csv` function in its default setting. Utilize the `col_select` and `lazy` options in the `read_csv` function to reduce the memory burden.
+    
+```{r}
+# filter rows
+filter_labevents_tble <- as_tibble(read_csv(str_c(mimic_path,
+                  "/hosp/labevents_filtered_itemid.csv.gz")))
+labevents_tble<-semi_join(filter_labevents_tble,icubyid)
+```
+
 
 3. Further restrict `labevents_tble` to the first lab measurement during the ICU stay. 
+```{r}
+# Keep only the first measurement
+labevents_tble <- group_by(labevents_tble,subject_id) %>%
+  distinct(subject_id, .keep_all = TRUE)
+labevents_tble
+```
+
+
 4. Summarize the lab measurements by appropriate numerics and graphics. 
+```{r}
+labevents_tble %>% 
+  group_by(itemid) %>%
+  summarise(count  = n(),
+            mean   = mean(valuenum, na.rm = TRUE),
+            std    = sd(valuenum, na.rm = TRUE),
+            IQR.25 = quantile(valuenum, .25, na.rm = TRUE),
+            IQR.75 = quantile(valuenum, .75, na.rm = TRUE))
+
+par(mfrow=c(3,4))
+labevents_tble %>% filter(itemid == 50912) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=valuenum)) +
+  xlim(0,2) +
+  ggtitle("creatinine")
+
+labevents_tble %>% filter(itemid == 50971) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=valuenum)) +
+  xlim(2,5) +
+  ggtitle("potassium")
+##
+##
+##
+######
+###
+
+```
+
 
 ## Q6. Vitals from charted events
 
