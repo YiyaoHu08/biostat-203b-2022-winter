@@ -196,8 +196,30 @@ system(
 ```
 
 1. Import `patients.csv.gz` (<https://mimic.mit.edu/docs/iv/modules/core/patients/>) as a tibble `patients_tble` and only keep the patients who have a match in `icustays_tble` (according to `subject_id`).
+```{r}
+patients_tble <- as_tibble(read_csv(str_c(mimic_path, "/core/patients.csv.gz")))
+icubyid <- group_by(icustays_tble,"subject_id","hadmi_id")
+patientbyid <-group_by(patients_tble,"subject_id","hadmi_id")
+matchid<-semi_join(patientbyid,icubyid)
+```
+
 
 2. Summarize variables `gender` and `anchor_age`, and explain any patterns you see.
+
+**Solution:**
+For the anchor_age of the two gender groups, the two distributions have similar means, standard deviations, IQRs. Their similar distributions are also reflected on the plot below.
+```{r}
+group_by(matchid,gender) %>%
+  summarise(anchor_count    = n(),
+            anchor_age_mean = mean(anchor_age),
+            anchor_age_sd   = sd(anchor_age),
+            anchor_age_0.25 = quantile(anchor_age, 0.25),
+            anchor_age_0.75 = quantile(anchor_age, 0.75))
+
+ggplot (data = matchid) +
+  geom_histogram(mapping = aes(x = anchor_age ,color = gender), fill="white")
+```
+
 
 ## Q5. Lab results
 
