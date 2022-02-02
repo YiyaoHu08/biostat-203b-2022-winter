@@ -276,7 +276,7 @@ labevents_tble<-semi_join(filter_labevents_tble,icubyid)
 # Keep only the first measurement
 labevents_tble <- group_by(labevents_tble,subject_id) %>%
   distinct(subject_id, .keep_all = TRUE)
-labevents_tble
+
 ```
 
 
@@ -287,10 +287,15 @@ labevents_tble %>%
   summarise(count  = n(),
             mean   = mean(valuenum, na.rm = TRUE),
             std    = sd(valuenum, na.rm = TRUE),
+            min   = min(valuenum, na.rm = TRUE),
             IQR.25 = quantile(valuenum, .25, na.rm = TRUE),
-            IQR.75 = quantile(valuenum, .75, na.rm = TRUE))
+            IQR.75 = quantile(valuenum, .75, na.rm = TRUE),
+            max   = max(valuenum, na.rm = TRUE))
+```
 
-par(mfrow=c(3,4))
+
+```{r}
+
 labevents_tble %>% filter(itemid == 50912) %>%
   ggplot() +
   geom_histogram(mapping = aes(x=valuenum)) +
@@ -302,12 +307,54 @@ labevents_tble %>% filter(itemid == 50971) %>%
   geom_histogram(mapping = aes(x=valuenum)) +
   xlim(2,5) +
   ggtitle("potassium")
-##
-##
-##
-######
-###
 
+labevents_tble %>% filter(itemid == 50983) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=valuenum)) +
+  xlim(130,145) +
+  ggtitle("sodium")
+
+labevents_tble %>% filter(itemid == 50902) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=valuenum)) +
+  xlim(85,115) +
+  ggtitle("chloride")
+
+labevents_tble %>% filter(itemid == 50882) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=valuenum)) +
+  xlim(0,50) +
+  ggtitle("bicarbonate")
+
+labevents_tble %>% filter(itemid == 51221) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=valuenum)) +
+  xlim(15,60) +
+  ggtitle("hematocrit")
+
+labevents_tble %>% filter(itemid == 51301) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=valuenum)) +
+  xlim(0,50) +
+  ggtitle("white blood cell count")
+
+labevents_tble %>% filter(itemid == 50931) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=valuenum)) +
+  xlim(0,500) +
+  ggtitle("glucose")
+
+labevents_tble %>% filter(itemid == 50960) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=valuenum)) +
+  xlim(0,5) +
+  ggtitle("magnessium")
+
+labevents_tble %>% filter(itemid == 50893) %>%
+  ggplot() + 
+  geom_histogram(mapping = aes(x=valuenum)) +
+  xlim(0,20) +
+  ggtitle("calcium")
 ```
 
 
@@ -335,10 +382,66 @@ system(
 ```
 
 1. We are interested in the vitals for ICU patients: heart rate (220045), mean non-invasive blood pressure (220181), systolic non-invasive blood pressure (220179), body temperature in Fahrenheit (223761), and respiratory rate (220210). Retrieve a subset of `chartevents.csv.gz` only containing these items for the patients in `icustays_tble` as a tibble `chartevents_tble`.
+```{r}
+filtered_chartevents_tble <- as_tibble(read_csv(str_c(mimic_path,
+                                  "/icu/chartevents_filtered_itemid.csv.gz")))
+chartevents_tble <- semi_join(filtered_chartevents_tble,icubyid)
+```
+
 
 2. Further restrict `chartevents_tble` to the first vital measurement during the ICU stay. 
+```{r}
+# Keep only the first measurement
+chartevents_tble_1st <- group_by(chartevents_tble,subject_id) %>%
+  distinct(subject_id, .keep_all = TRUE)
+```
 
 3. Summarize these vital measurements by appropriate numerics and graphics. 
+```{r}
+chartevents_tble_1st %>% 
+  group_by(itemid) %>%
+  summarise(count  = n(),
+            mean   = mean(valuenum, na.rm = TRUE),
+            std    = sd(valuenum, na.rm = TRUE),
+            min   = min(valuenum, na.rm = TRUE),
+            IQR.25 = quantile(valuenum, .25, na.rm = TRUE),
+            IQR.75 = quantile(valuenum, .75, na.rm = TRUE),
+            max   = max(valuenum, na.rm = TRUE))
+```
+
+```{r}
+
+chartevents_tble_1st %>% filter(itemid == 220045) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=valuenum)) +
+  xlim(0,200) +
+  ggtitle("heart rate")
+
+chartevents_tble_1st %>% filter(itemid == 220181) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=valuenum)) +
+  xlim(0,200) +
+  ggtitle("mean non-invasive blood pressure")
+
+chartevents_tble_1st %>% filter(itemid == 220179) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=valuenum)) +
+  xlim(0,300) +
+  ggtitle("systolic non-invasive blood pressure")
+
+chartevents_tble_1st %>% filter(itemid == 223761) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=valuenum)) +
+  xlim(75,120) +
+  ggtitle("body temperature in Fahrenheit")
+
+chartevents_tble_1st %>% filter(itemid == 220210) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=valuenum)) +
+  xlim(0,100) +
+  ggtitle("respiratory rate")
+```
+
 
 ## Q7. Putting things together
 
@@ -354,6 +457,54 @@ and columns contain at least following variables
 - first lab measurements during ICU stay  
 - first vital measurements during ICU stay
 - an indicator variable `thirty_day_mort` whether the patient died within 30 days of hospital admission (30 day mortality)
+
+```{r}
+icustays_tble_1st <- group_by(icustays_tble,subject_id) %>%
+  distinct(subject_id, .keep_all = TRUE)
+
+chartevents_tble_1st_vitalvalue <- group_by(chartevents_tble,subject_id) %>%
+  distinct(subject_id, .keep_all = TRUE) %>%
+  mutate(vitalitemid = itemid,
+         vitalvaluenum = valuenum) %>%
+   select(vitalitemid, vitalvaluenum) 
+
+labevents_tble_1st_labvalue <- group_by(labevents_tble,subject_id) %>%
+  distinct(subject_id, .keep_all = TRUE) %>%
+  mutate(labitemid = itemid,
+         labvaluenum = valuenum) %>%
+  select(labitemid, labvaluenum)
+
+# str(icustays_tble_1st)
+# str(chartevents_tble_1st)
+#str(labevents_tble_1st_labvalue)
+
+
+mimic_icu_cohort <- icustays_tble_1st %>% 
+  inner_join(admissions_tble) %>%
+  inner_join(patients_tble) %>%
+  inner_join(labevents_tble_1st_labvalue) %>%
+  inner_join(chartevents_tble_1st_vitalvalue) %>%
+  filter(anchor_age >= 18) %>%
+  mutate(length = date(deathtime) - date(admittime))
+
+
+mimic_icu_cohort$length
+mimic_icu_cohort$thirty_day_mort
+!is.na(mimic_icu_cohort$length)
+  
+if ( !is.na(mimic_icu_cohort$length) && mimic_icu_cohort$length<=30) {
+  mimic_icu_cohort$thirty_day_mort = 1
+}
+
+if (is.na(mimic_icu_cohort$length)) {
+  mimic_icu_cohort$length = 0
+}
+
+
+```
+
+
+
 
 ## Q8. Exploratory data analysis (EDA)
 
