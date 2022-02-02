@@ -502,10 +502,118 @@ mimic_icu_cohort$thirty_day_mort[mimic_icu_cohort$length > 0 &
 Summarize following information using appropriate numerics or graphs.
 
 - `thirty_day_mort` vs demographic variables (ethnicity, language, insurance, marital_status, gender, age at hospital admission)
+```{r}
+mimic_icu_cohort %>% 
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_bar(mapping = aes(x = ethnicity, 
+                    fill = as.character(thirty_day_mort)), position = "dodge") +
+  theme(axis.text=element_text(size=4),
+        axis.title=element_text(size=14,face="bold"))
+
+mimic_icu_cohort %>% 
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_bar(mapping = aes(x = language, 
+                    fill = as.character(thirty_day_mort)), position = "dodge") +
+  theme(axis.text=element_text(size=8),
+        axis.title=element_text(size=14,face="bold"))
+
+mimic_icu_cohort %>% 
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_bar(mapping = aes(x = insurance, 
+                    fill = as.character(thirty_day_mort)), position = "dodge") +
+  theme(axis.text=element_text(size=8),
+        axis.title=element_text(size=14,face="bold"))
+
+mimic_icu_cohort %>% 
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_bar(mapping = aes(x = marital_status, 
+                    fill = as.character(thirty_day_mort)), position = "dodge") +
+  theme(axis.text=element_text(size=8),
+        axis.title=element_text(size=14,face="bold"))
+
+mimic_icu_cohort %>% 
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_bar(mapping = aes(x = gender, 
+                    fill = as.character(thirty_day_mort)), position = "dodge") +
+  theme(axis.text=element_text(size=8),
+        axis.title=element_text(size=14,face="bold"))
+
+mimic_icu_cohort %>% 
+  group_by(thirty_day_mort) %>%
+  ggplot () +
+  geom_histogram(mapping = aes(x = anchor_age, 
+                               fill = as.character(thirty_day_mort)))
+```
 
 - `thirty_day_mort` vs first lab measurements
+```{r}
+
+pa <- mimic_icu_cohort %>% 
+  filter(vitalitemid == 220045) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=vitalvaluenum,fill = as.character(thirty_day_mort)))+
+  xlim(0,200) +
+  ggtitle("heart rate")
+
+pb <- mimic_icu_cohort %>% 
+  filter(vitalitemid == 220181) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=vitalvaluenum,fill = as.character(thirty_day_mort)))+
+  xlim(0,200) +
+  ggtitle("mean non-invasive blood pressure")
+
+pc <- mimic_icu_cohort %>% 
+  filter(vitalitemid == 220179) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=vitalvaluenum,fill = as.character(thirty_day_mort)))+
+  xlim(0,300) +
+  ggtitle("systolic non-invasive blood pressure")
+
+pd <- mimic_icu_cohort %>% 
+  filter(vitalitemid == 223761) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=vitalvaluenum,fill = as.character(thirty_day_mort)))+
+  xlim(75,120) +
+  ggtitle("body temperature in Fahrenheit")
+
+pe <- mimic_icu_cohort %>% 
+  filter(vitalitemid == 220210) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=vitalvaluenum,fill = as.character(thirty_day_mort)))+
+  xlim(0, 100) +
+  ggtitle("respiratory rate")
+
+
+
+```
 
 - `thirty_day_mort` vs first vital measurements
+```{r}
+mimic_icu_cohort %>% 
+  group_by(vitalitemid) %>%
+  ggplot() + 
+  geom_bar(mapping = aes(x = vitalvaluenum))
+```
 
 - `thirty_day_mort` vs first ICU unit
+```{r}
+p1 <- ggplot(mtcars, aes(mpg, wt, colour = factor(cyl))) +
+  geom_point()+ theme_article() + theme(legend.position = 'top') 
+p2 <- ggplot(mtcars, aes(mpg, wt, colour = factor(cyl))) +
+  geom_point() + facet_wrap(~ cyl, ncol = 2, scales = "free") +
+  guides(colour = "none") +
+  theme_article()
+  
+ggarrange(p1, p2, widths = c(1.5,2))
+```
 
