@@ -478,7 +478,6 @@ labevents_tble_1st_labvalue <- group_by(labevents_tble,subject_id) %>%
 # str(chartevents_tble_1st)
 #str(labevents_tble_1st_labvalue)
 
-
 mimic_icu_cohort <- icustays_tble_1st %>% 
   inner_join(admissions_tble) %>%
   inner_join(patients_tble) %>%
@@ -487,20 +486,12 @@ mimic_icu_cohort <- icustays_tble_1st %>%
   filter(anchor_age >= 18) %>%
   mutate(length = date(deathtime) - date(admittime))
 
+mimic_icu_cohort$length <- ifelse(is.na(mimic_icu_cohort$length), 0,
+                                  mimic_icu_cohort$length)
 
-mimic_icu_cohort$length
-mimic_icu_cohort$thirty_day_mort
-!is.na(mimic_icu_cohort$length)
-  
-if ( !is.na(mimic_icu_cohort$length) && mimic_icu_cohort$length<=30) {
-  mimic_icu_cohort$thirty_day_mort = 1
-}
-
-if (is.na(mimic_icu_cohort$length)) {
-  mimic_icu_cohort$length = 0
-}
-
-
+mimic_icu_cohort$thirty_day_mort = 0
+mimic_icu_cohort$thirty_day_mort[mimic_icu_cohort$length > 0 & 
+                                   mimic_icu_cohort$length < 30] = 1
 ```
 
 
