@@ -79,7 +79,7 @@ system(
 
 1. Import `icustatys.csv.gz` as a tibble `icustays_tble`. 
 ```{r}
-icustays_tble <- as_tibble(read_csv(str_c(mimic_path, "/icu/icustays.csv.gz")))
+icustays_tble <- read_csv(str_c(mimic_path, "/icu/icustays.csv.gz"))
 ```
 
 2. How many unique `subject_id`? Can a `subject_id` have multiple ICU stays? 
@@ -87,9 +87,7 @@ icustays_tble <- as_tibble(read_csv(str_c(mimic_path, "/icu/icustays.csv.gz")))
 
 There are 53,150 unique 'subject_id' and 76,540 unique 'stay_id'. So there must be some "subject_id" with more than one ICU stays.
 ```{r,eval=FALSE}
-head(icustays_tble)
-summary(icustays_tble)
-str(icustays_tble)
+dim(icustays_tble)
 ```
 
 ```{r}
@@ -101,9 +99,10 @@ count(distinct(icustays_tble, stay_id))
 
 3. For each `subject_id`, let's only keep the first ICU stay in the tibble `icustays_tble`.
 ```{r}
-# only the first suject_id will be kept
-by_id <- arrange(icustays_tble, subject_id) %>%
+# only the first subject_id will be kept
+icustays_tble <- arrange(icustays_tble, subject_id) %>%
   group_by(subject_id) %>% distinct(subject_id, .keep_all = TRUE)
+dim(icustays_tble)
 ```
 
 
@@ -127,17 +126,14 @@ system(
 
 1. Import `admissions.csv.gz` as a tibble `admissions_tble`.
 ```{r}
-admissions_tble <- as_tibble(read_csv(str_c(mimic_path, "/core/admissions.csv.gz")))
+admissions_tble <- read_csv(str_c(mimic_path, "/core/admissions.csv.gz"))
 ```
 
 2. Let's only keep the admissions that have a match in `icustays_tble` according to `subject_id` and `hadmi_id`.
 ```{r}
 #semi_join: Keeps the rows in x that have a match in y
-icubyid <- group_by(icustays_tble,"subject_id","hadmi_id")
-admbyid <-group_by(admissions_tble,"subject_id","hadmi_id")
-matchid<-semi_join(admbyid,icubyid)
-head(matchid)
-
+admissions_tble <- semi_join(admissions_tble, icustays_tble)
+dim(admissions_tble)
 ```
 
 
@@ -148,7 +144,7 @@ head(matchid)
 library(ggplot2)
 admissions_tble$Year<-year(admissions_tble$admittime)
 ggplot(data=admissions_tble) +
-  geom_bar(mapping = aes(x=Year))
+  geom_bar(mapping = aes(x=Year)) 
 ```
 
 - admission month  
@@ -198,26 +194,29 @@ system(
 
 1. Import `patients.csv.gz` (<https://mimic.mit.edu/docs/iv/modules/core/patients/>) as a tibble `patients_tble` and only keep the patients who have a match in `icustays_tble` (according to `subject_id`).
 ```{r}
-patients_tble <- as_tibble(read_csv(str_c(mimic_path, "/core/patients.csv.gz")))
-icubyid <- group_by(icustays_tble,"subject_id","hadmi_id")
-patientbyid <-group_by(patients_tble,"subject_id","hadmi_id")
-matchid<-semi_join(patientbyid,icubyid)
+patients_tble <- read_csv(str_c(mimic_path, "/core/patients.csv.gz")) %>% 
+  semi_join(icustays_tble)
+dim(patients_tble)
 ```
 
 
 2. Summarize variables `gender` and `anchor_age`, and explain any patterns you see.
 
 **Solution:**
-For the anchor_age of the two gender groups, the two distributions have similar means, standard deviations, IQRs. Their similar distributions are also reflected on the plot below.
+There are more males than females. For the anchor_age of the two gender groups, the two distributions have similar means, standard deviations, IQRs. Their similar distributions are also reflected on the plot below.
 ```{r}
-group_by(matchid,gender) %>%
+group_by(patients_tble,gender) %>%
   summarise(anchor_count    = n(),
             anchor_age_mean = mean(anchor_age),
             anchor_age_sd   = sd(anchor_age),
+            anchor_age_min = min(anchor_age),
             anchor_age_0.25 = quantile(anchor_age, 0.25),
-            anchor_age_0.75 = quantile(anchor_age, 0.75))
+            anchor_age_0.75 = quantile(anchor_age, 0.75),
+            anchor_age_max = max(anchor_age))
+```
 
-ggplot (data = matchid) +
+```{r}
+ggplot (data = patients_tble) +
   geom_histogram(mapping = aes(x = anchor_age ,color = gender), fill="white")
 ```
 
