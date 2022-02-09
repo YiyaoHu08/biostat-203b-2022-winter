@@ -46,20 +46,21 @@ For later questions, we stick to the tidyverse.
 
 **Solutions:**
 
-Read.csv takes 36.805s, read_csv takes 3.175s, and fread takes 1.513s. Fread is the fastest among these three. 
+Read.csv takes 30+ s, read_csv takes 3+s, and fread takes 1+s. read_csv is about 10 times faster than read.csv, while Fread is the fastest among these three. 
+
+
+Read_csv produce tibbles and doesn’t convert character vectors to factors*, use row names, or munge the column names. These are common sources of frustration with the base R functions. Read_csv is also more reproducible. Base R functions inherit some behaviour from your operating system and environment variables, so import code that works on your computer might not work on someone else’s.
 
 ```{r}
 system.time(read.csv(str_c(mimic_path, "/core/admissions.csv.gz")))
-typeof(read.csv(str_c(mimic_path, "/core/admissions.csv.gz"))) 
 ```
+
 ```{r}
 system.time(read_csv(str_c(mimic_path, "/core/admissions.csv.gz")))
-typeof(read_csv(str_c(mimic_path, "/core/admissions.csv.gz")))
 ```
 
 ```{r}
 system.time(fread(str_c(mimic_path, "/core/admissions.csv.gz")))
-typeof(fread(str_c(mimic_path, "/core/admissions.csv.gz")))
 ```
 
 ## Q2. ICU stays
