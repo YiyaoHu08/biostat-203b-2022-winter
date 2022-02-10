@@ -1,0 +1,698 @@
+---
+title: "Biostat 203B Homework 2"
+subtitle: Due Feb 6 @ 11:59PM
+author: Your Name
+output: 
+  html_document:
+    toc: true
+    toc_depth: 4 
+---
+
+Display machine information for reproducibility:
+```{r}
+sessionInfo() 
+```
+
+```{r setup, message=F}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, cache.lazy = FALSE)
+library(tidyverse)
+library(data.table)
+library(lubridate)
+```
+
+```{r}
+os <- sessionInfo()$running
+if (str_detect(os, "Linux")) {
+  mimic_path <- "/mnt/mimiciv/1.0"
+} else if (str_detect(os, "macOS")) {
+  mimic_path <- "/Users/huazhou/Documents/Box Sync/MIMIC/mimic-iv-1.0"
+}
+```
+
+In this exercise, we use tidyverse (ggpot2, dplyr, etc) to explore the [MIMIC-IV](https://mimic.mit.edu/docs/iv/) data introduced in [homework 1](https://ucla-biostat-203b.github.io/2022winter/hw/hw1/hw1.html) and to build a cohort of ICU stays.
+
+```{r}
+# tree -s -L 2 /Users/huazhou/Documents/Box\ Sync/MIMIC/mimic-iv-1.0
+system(str_c("tree -s -L 2 ", shQuote(mimic_path)), intern = TRUE)
+```
+
+## Q1. `read.csv` (base R) vs `read_csv` (tidyverse) vs `fread` (data.table)
+
+There are quite a few utilities in R for reading plain text data files. Let us test the speed of reading a moderate sized compressed csv file, `admissions.csv.gz`, by three programs: `read.csv` in base R, `read_csv` in tidyverse, and `fread` in the popular data.table package. 
+
+Which function is fastest? Is there difference in the (default) parsed data types? (Hint: R function `system.time` measures run times.)
+
+For later questions, we stick to the tidyverse.
+
+**Solutions:**
+
+Read.csv takes 30+ s, read_csv takes 3+s, and fread takes 1+s. read_csv is about 10 times faster than read.csv, while Fread is the fastest among these three. 
+
+
+Read_csv produce tibbles and doesn’t convert character vectors to factors*, use row names, or munge the column names. These are common sources of frustration with the base R functions. Read_csv is also more reproducible. Base R functions inherit some behaviour from your operating system and environment variables, so import code that works on your computer might not work on someone else’s.
+
+```{r}
+system.time(read.csv(str_c(mimic_path, "/core/admissions.csv.gz")))
+```
+
+```{r}
+system.time(read_csv(str_c(mimic_path, "/core/admissions.csv.gz")))
+```
+
+```{r}
+system.time(fread(str_c(mimic_path, "/core/admissions.csv.gz")))
+```
+
+## Q2. ICU stays
+
+`icustays.csv.gz` (<https://mimic.mit.edu/docs/iv/modules/icu/icustays/>) contains data about Intensive Care Units (ICU) stays. The first 10 lines are
+```{r}
+system(
+  str_c(
+    "zcat < ", 
+    shQuote(str_c(mimic_path, "/icu/icustays.csv.gz")), 
+    " | head"
+    ), 
+  intern = TRUE
+)
+```
+
+1. Import `icustatys.csv.gz` as a tibble `icustays_tble`. 
+```{r}
+icustays_tble <- read_csv(str_c(mimic_path, "/icu/icustays.csv.gz"))
+```
+
+2. How many unique `subject_id`? Can a `subject_id` have multiple ICU stays? 
+**Solution:**
+
+There are 53,150 unique 'subject_id' and 76,540 unique 'stay_id'. So there must be some "subject_id" with more than one ICU stays.
+```{r,eval=TRUE}
+dim(icustays_tble)
+```
+
+```{r}
+# Respective counts of subject_ID & stay_id
+count(distinct(icustays_tble, subject_id))
+count(distinct(icustays_tble, stay_id))
+```
+
+
+3. For each `subject_id`, let's only keep the first ICU stay in the tibble `icustays_tble`.
+```{r}
+# only the first subject_id will be kept
+icustays_tble <- arrange(icustays_tble, subject_id) %>%
+  group_by(subject_id) %>% distinct(subject_id, .keep_all = TRUE)
+dim(icustays_tble)
+```
+
+
+
+
+
+
+## Q3. `admission` data
+
+Information of the patients admitted into hospital is available in `admissions.csv.gz`. See <https://mimic.mit.edu/docs/iv/modules/core/admissions/> for details of each field in this file. The first 10 lines are
+```{r}
+system(
+  str_c(
+    "zcat < ", 
+    shQuote(str_c(mimic_path, "/core/admissions.csv.gz")), 
+    " | head"
+    ), 
+  intern = TRUE
+)
+```
+
+1. Import `admissions.csv.gz` as a tibble `admissions_tble`.
+```{r}
+admissions_tble <- read_csv(str_c(mimic_path, "/core/admissions.csv.gz"))
+```
+
+2. Let's only keep the admissions that have a match in `icustays_tble` according to `subject_id` and `hadmi_id`.
+```{r}
+#semi_join: Keeps the rows in x that have a match in y
+admissions_tble <- semi_join(admissions_tble, icustays_tble)
+dim(admissions_tble)
+```
+
+
+3. Summarize the following variables by graphics. 
+
+- admission year  
+```{r}
+library(ggplot2)
+admissions_tble$Year <- year(admissions_tble$admittime)
+ggplot(data = admissions_tble) +
+  geom_bar(mapping = aes(x = Year)) 
+```
+
+- admission month  
+```{r}
+admissions_tble$Month <- month(admissions_tble$admittime)
+ggplot(data = admissions_tble) +
+  geom_bar(mapping = aes(x = Month)) +
+  scale_x_continuous(breaks = seq(1, 12, 1))
+```
+
+
+- admission month day  
+```{r}
+admissions_tble$monthday <- mday(admissions_tble$admittime)
+ggplot(data = admissions_tble) +
+  geom_bar(mapping = aes(x = monthday)) +
+  scale_x_continuous(breaks = seq(1, 31, 1))
+```
+- admission week day  
+```{r}
+admissions_tble$weekday <- wday(admissions_tble$admittime)
+ggplot(data = admissions_tble) +
+  geom_bar(mapping = aes(x = weekday)) +
+  scale_x_continuous(breaks = seq(1, 7, 1))
+```
+- admission hour (anything unusual?)
+```{r}
+admissions_tble$hour <- hour(admissions_tble$admittime)
+ggplot(data = admissions_tble) +
+  geom_bar(mapping = aes(x = hour)) +
+  scale_x_continuous(breaks = seq(0, 23, 1))
+```
+
+## Q4. `patients` data
+
+Patient information is available in `patients.csv.gz`. See <https://mimic.mit.edu/docs/iv/modules/core/patients/> for details of each field in this file. The first 10 lines are
+```{r}
+system(
+  str_c(
+    "zcat < ", 
+    shQuote(str_c(mimic_path, "/core/patients.csv.gz")), 
+    " | head"
+    ), 
+  intern = TRUE
+)
+```
+
+1. Import `patients.csv.gz` (<https://mimic.mit.edu/docs/iv/modules/core/patients/>) as a tibble `patients_tble` and only keep the patients who have a match in `icustays_tble` (according to `subject_id`).
+```{r}
+patients_tble <- read_csv(str_c(mimic_path, "/core/patients.csv.gz")) %>% 
+  semi_join(icustays_tble)
+dim(patients_tble)
+```
+
+
+2. Summarize variables `gender` and `anchor_age`, and explain any patterns you see.
+
+**Solution:**
+There are more males than females. For the anchor_age of the two gender groups, the two distributions have similar means, standard deviations, IQRs. Their similar distributions are also reflected on the plot below.
+```{r}
+group_by(patients_tble,gender) %>%
+  summarise(anchor_count    = n(),
+            anchor_age_mean = mean(anchor_age),
+            anchor_age_sd   = sd(anchor_age),
+            anchor_age_min = min(anchor_age),
+            anchor_age_0.25 = quantile(anchor_age, 0.25),
+            anchor_age_0.75 = quantile(anchor_age, 0.75),
+            anchor_age_max = max(anchor_age))
+```
+
+```{r}
+ggplot(data = patients_tble) +
+  geom_histogram(mapping = aes(x = anchor_age ,color = gender), fill="white")
+```
+
+
+## Q5. Lab results
+
+`labevents.csv.gz` (<https://mimic.mit.edu/docs/iv/modules/hosp/labevents/>) contains all laboratory measurements for patients. The first 10 lines are
+```{r}
+system(
+  str_c(
+    "zcat < ", 
+    shQuote(str_c(mimic_path, "/hosp/labevents.csv.gz")), 
+    " | head"
+    ), 
+  intern = TRUE
+)
+```
+`d_labitems.csv.gz` is the dictionary of lab measurements. 
+```{r}
+system(
+  str_c(
+    "zcat < ", 
+    shQuote(str_c(mimic_path, "/hosp/d_labitems.csv.gz")), 
+    " | head"
+    ), 
+  intern = TRUE
+)
+```
+
+1. Find how many rows are in `labevents.csv.gz`.
+
+**Solution:**
+
+There are 122,103,667 rows in this data set.
+```{r}
+#labevents_tble <- read_csv(str_c(mimic_path,"/hosp/labevents.csv.gz"),
+#                 col_select = c("subject_id","itemid","valuenum","charttime"),
+#                lazy = TRUE)
+#dim(labevents_tble)
+```
+
+
+2. We are interested in the lab measurements of creatinine (50912), potassium (50971), sodium (50983), chloride (50902), bicarbonate (50882), hematocrit (51221), white blood cell count (51301), glucose (50931), magnesium (50960), and calcium (50893). Retrieve a subset of `labevents.csv.gz` only containing these items for the patients in `icustays_tble` as a tibble `labevents_tble`. 
+
+    Hint: `labevents.csv.gz` is a data file too big to be read in by the `read_csv` function in its default setting. Utilize the `col_select` and `lazy` options in the `read_csv` function to reduce the memory burden.
+    
+```{r}
+# filter rows
+labevents_tble <- read_csv(str_c(mimic_path,
+                  "/hosp/labevents_filtered_itemid.csv.gz")) %>% 
+                   semi_join(icustays_tble)
+dim(labevents_tble)
+```
+
+
+3. Further restrict `labevents_tble` to the first lab measurement during the ICU stay. 
+```{r}
+# Keep only the first measurement
+labevents_tble <- group_by(labevents_tble,subject_id) %>%
+  distinct(subject_id, .keep_all = TRUE)
+dim(labevents_tble)
+```
+
+
+4. Summarize the lab measurements by appropriate numerics and graphics. 
+```{r}
+labevents_tble %>% 
+  group_by(itemid) %>%
+  summarise(count  = n(),
+            mean   = mean(valuenum, na.rm = TRUE),
+            std    = sd(valuenum, na.rm = TRUE),
+            min   = min(valuenum, na.rm = TRUE),
+            IQR.25 = quantile(valuenum, .25, na.rm = TRUE),
+            IQR.75 = quantile(valuenum, .75, na.rm = TRUE),
+            max   = max(valuenum, na.rm = TRUE))
+```
+
+
+```{r}
+
+labevents_tble %>% filter(itemid == 50912) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = valuenum)) +
+  xlim(0,15) +
+  ggtitle("creatinine")
+
+labevents_tble %>% filter(itemid == 50971) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = valuenum)) +
+  xlim(2,6) +
+  ggtitle("potassium")
+
+labevents_tble %>% filter(itemid == 50983) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = valuenum)) +
+  xlim(120,160) +
+  ggtitle("sodium")
+
+labevents_tble %>% filter(itemid == 50902) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = valuenum)) +
+  xlim(70,130) +
+  ggtitle("chloride")
+
+labevents_tble %>% filter(itemid == 50882) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = valuenum)) +
+  xlim(0,50) +
+  ggtitle("bicarbonate")
+
+labevents_tble %>% filter(itemid == 51221) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = valuenum)) +
+  xlim(10,70) +
+  ggtitle("hematocrit")
+
+labevents_tble %>% filter(itemid == 51301) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = valuenum)) +
+  xlim(0,50) +
+  ggtitle("white blood cell count")
+
+labevents_tble %>% filter(itemid == 50931) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = valuenum)) +
+  xlim(0,500) +
+  ggtitle("glucose")
+
+labevents_tble %>% filter(itemid == 50960) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = valuenum)) +
+  xlim(0,5) +
+  ggtitle("magnessium")
+
+labevents_tble %>% filter(itemid == 50893) %>%
+  ggplot() + 
+  geom_histogram(mapping = aes(x = valuenum)) +
+  xlim(0,20) +
+  ggtitle("calcium")
+```
+
+
+## Q6. Vitals from charted events
+
+`chartevents.csv.gz` (<https://mimic.mit.edu/docs/iv/modules/icu/chartevents/>) contains all the charted data available for a patient. During their ICU stay, the primary repository of a patient’s information is their electronic chart. The `itemid` variable indicates a single measurement type in the database. The `value` variable is the value measured for `itemid`. The first 10 lines of `chartevents.csv.gz` are
+```{r}
+system(
+  str_c(
+    "zcat < ", 
+    shQuote(str_c(mimic_path, "/icu/chartevents.csv.gz")), 
+    " | head"), 
+  intern = TRUE
+)
+```
+`d_items.csv.gz` (<https://mimic.mit.edu/docs/iv/modules/icu/d_items/>) is the dictionary for the `itemid` in `chartevents.csv.gz`. 
+```{r}
+system(
+  str_c(
+    "zcat < ", 
+    shQuote(str_c(mimic_path, "/icu/d_items.csv.gz")), 
+    " | head"), 
+  intern = TRUE
+)
+```
+
+1. We are interested in the vitals for ICU patients: heart rate (220045), mean non-invasive blood pressure (220181), systolic non-invasive blood pressure (220179), body temperature in Fahrenheit (223761), and respiratory rate (220210). Retrieve a subset of `chartevents.csv.gz` only containing these items for the patients in `icustays_tble` as a tibble `chartevents_tble`.
+```{r}
+chartevents_tble <- as_tibble(read_csv(str_c(mimic_path,
+                              "/icu/chartevents_filtered_itemid.csv.gz"))) %>%
+                    semi_join(icustays_tble)
+dim(chartevents_tble)
+```
+
+
+2. Further restrict `chartevents_tble` to the first vital measurement during the ICU stay. 
+```{r}
+# Keep only the first measurement
+chartevents_tble <- group_by(chartevents_tble,subject_id) %>%
+  distinct(subject_id, .keep_all = TRUE)
+dim(chartevents_tble)
+```
+
+3. Summarize these vital measurements by appropriate numerics and graphics. 
+```{r}
+chartevents_tble %>% 
+  group_by(itemid) %>%
+  summarise(count  = n(),
+            mean   = mean(valuenum, na.rm = TRUE),
+            std    = sd(valuenum, na.rm = TRUE),
+            min   = min(valuenum, na.rm = TRUE),
+            IQR.25 = quantile(valuenum, .25, na.rm = TRUE),
+            IQR.75 = quantile(valuenum, .75, na.rm = TRUE),
+            max   = max(valuenum, na.rm = TRUE))
+```
+
+```{r}
+
+chartevents_tble %>% filter(itemid == 220045) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=valuenum)) +
+  xlim(0,200) +
+  ggtitle("heart rate")
+
+chartevents_tble %>% filter(itemid == 220181) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = valuenum)) +
+  xlim(0,300) +
+  ggtitle("mean non-invasive blood pressure")
+
+chartevents_tble %>% filter(itemid == 220179) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = valuenum)) +
+  xlim(0,300) +
+  ggtitle("systolic non-invasive blood pressure")
+
+chartevents_tble %>% filter(itemid == 223761) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = valuenum)) +
+  xlim(75,120) +
+  ggtitle("body temperature in Fahrenheit")
+
+chartevents_tble %>% filter(itemid == 220210) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = valuenum)) +
+  xlim(0,100) +
+  ggtitle("respiratory rate")
+```
+
+
+## Q7. Putting things together
+
+Let us create a tibble `mimic_icu_cohort` for all ICU stays, where rows are  
+
+- first ICU stay of each unique adult (age at admission > 18)
+
+and columns contain at least following variables  
+
+- all variables in `icustays.csv.gz`  
+- all variables in `admission.csv.gz`  
+- all variables in `patients.csv.gz`  
+- first lab measurements during ICU stay  
+- first vital measurements during ICU stay
+- an indicator variable `thirty_day_mort` whether the patient died within 30 days of hospital admission (30 day mortality)
+
+```{r}
+icustays_tble_1st <- group_by(icustays_tble,subject_id) %>%
+  distinct(subject_id, .keep_all = TRUE)
+
+chartevents_tble_1st_vitalvalue <- group_by(chartevents_tble,subject_id) %>%
+  distinct(subject_id, .keep_all = TRUE) %>%
+  mutate(vitalitemid = itemid,
+         vitalvaluenum = valuenum) %>%
+   select(vitalitemid, vitalvaluenum) 
+
+labevents_tble_1st_labvalue <- group_by(labevents_tble,subject_id) %>%
+  distinct(subject_id, .keep_all = TRUE) %>%
+  mutate(labitemid = itemid,
+         labvaluenum = valuenum) %>%
+  select(labitemid, labvaluenum)
+
+mimic_icu_cohort <- icustays_tble_1st %>% 
+  inner_join(admissions_tble) %>%
+  inner_join(patients_tble) %>%
+  inner_join(labevents_tble_1st_labvalue) %>%
+  inner_join(chartevents_tble_1st_vitalvalue) %>%
+  filter(anchor_age >= 18) %>%
+  mutate(length = date(deathtime) - date(admittime))
+
+mimic_icu_cohort$length <- ifelse(is.na(mimic_icu_cohort$length), 0,
+                                  mimic_icu_cohort$length)
+
+mimic_icu_cohort$thirty_day_mort = 0
+mimic_icu_cohort$thirty_day_mort[mimic_icu_cohort$length > 0 & 
+                                   mimic_icu_cohort$length < 30] = 1
+```
+
+
+
+
+## Q8. Exploratory data analysis (EDA)
+
+Summarize following information using appropriate numerics or graphs.
+
+- `thirty_day_mort` vs demographic variables (ethnicity, language, insurance, marital_status, gender, age at hospital admission)
+```{r}
+mimic_icu_cohort %>% 
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_bar(mapping = aes(x = ethnicity, 
+                  fill = as.character(thirty_day_mort)), position = "dodge") +
+  theme(axis.text = element_text(size = 4),
+        axis.title = element_text(size = 14,face = "bold"))
+
+mimic_icu_cohort %>% 
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_bar(mapping = aes(x = language, 
+                  fill = as.character(thirty_day_mort)), position = "dodge") +
+  theme(axis.text = element_text(size=8),
+        axis.title = element_text(size = 14,face = "bold"))
+
+mimic_icu_cohort %>% 
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_bar(mapping = aes(x = insurance, 
+                   fill = as.character(thirty_day_mort)), position = "dodge") +
+  theme(axis.text = element_text(size = 8),
+        axis.title = element_text(size = 14,face = "bold"))
+
+mimic_icu_cohort %>% 
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_bar(mapping = aes(x = marital_status, 
+                   fill = as.character(thirty_day_mort)), position = "dodge") +
+  theme(axis.text = element_text(size = 8),
+        axis.title = element_text(size = 14,face = "bold"))
+
+mimic_icu_cohort %>% 
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_bar(mapping = aes(x = gender, 
+                   fill = as.character(thirty_day_mort)), position = "dodge") +
+  theme(axis.text = element_text(size = 8),
+        axis.title = element_text(size = 14,face = "bold"))
+
+mimic_icu_cohort %>% 
+  group_by(thirty_day_mort) %>%
+  ggplot () +
+  geom_histogram(mapping = aes(x = anchor_age, 
+                               fill = as.character(thirty_day_mort)))
+```
+
+- `thirty_day_mort` vs first lab measurements
+```{r}
+mimic_icu_cohort %>% filter(labitemid == 50912) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0,10) +
+  ggtitle("creatinine")
+
+mimic_icu_cohort %>% filter(labitemid == 50971) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(2,6) +
+  ggtitle("potassium")
+
+mimic_icu_cohort %>% filter(labitemid == 50983) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(120,160) +
+  ggtitle("sodium")
+
+mimic_icu_cohort %>% filter(labitemid == 50902) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(70,130) +
+  ggtitle("chloride")
+
+mimic_icu_cohort %>% filter(labitemid == 50882) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0,50) +
+  ggtitle("bicarbonate")
+
+
+mimic_icu_cohort %>% filter(labitemid == 51221) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0,70) +
+  ggtitle("hematocrit")
+
+mimic_icu_cohort %>% filter(labitemid == 51301) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0,50) +
+  ggtitle("white blood cell count")
+
+mimic_icu_cohort %>% filter(labitemid == 50931) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0,500) +
+  ggtitle("glucose")
+
+mimic_icu_cohort %>% filter(labitemid == 50960) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0,5) +
+  ggtitle("magnessium")
+
+mimic_icu_cohort %>% filter(labitemid == 50893) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0,20) +
+  ggtitle("calcium")
+```
+
+- `thirty_day_mort` vs first vital measurements
+```{r}
+mimic_icu_cohort %>% 
+  filter(vitalitemid == 220045) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = vitalvaluenum,
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0,200) +
+  ggtitle("heart rate")
+
+mimic_icu_cohort %>% 
+  filter(vitalitemid == 220181) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = vitalvaluenum,
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0,200) +
+  ggtitle("mean non-invasive blood pressure")
+
+mimic_icu_cohort %>% 
+  filter(vitalitemid == 220179) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = vitalvaluenum,
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0,300) +
+  ggtitle("systolic non-invasive blood pressure")
+
+mimic_icu_cohort %>% 
+  filter(vitalitemid == 223761) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = vitalvaluenum,
+                               fill = as.character(thirty_day_mort)))+
+  xlim(75,120) +
+  ggtitle("body temperature in Fahrenheit")
+
+mimic_icu_cohort %>% 
+  filter(vitalitemid == 220210) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x = vitalvaluenum,
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0, 100) +
+  ggtitle("respiratory rate")
+```
+
+- `thirty_day_mort` vs first ICU unit
+```{r}
+ggplot (data = patients_tble) +
+  geom_histogram(mapping = aes(x = anchor_age ,color = gender), fill = "white")
+
+mimic_icu_cohort %>%
+  ggplot() +
+  geom_bar(mapping = aes(x = first_careunit, 
+                         fill = as.character(thirty_day_mort)),
+                        position = "stack") +
+  ggtitle("") +
+  theme(text = element_text(size = 8),
+        axis.text.x = element_text(angle = 30, vjust = 1)) 
+```
+
