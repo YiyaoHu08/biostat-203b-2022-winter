@@ -86,7 +86,7 @@ icustays_tble <- read_csv(str_c(mimic_path, "/icu/icustays.csv.gz"))
 **Solution:**
 
 There are 53,150 unique 'subject_id' and 76,540 unique 'stay_id'. So there must be some "subject_id" with more than one ICU stays.
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 dim(icustays_tble)
 ```
 
@@ -252,10 +252,10 @@ system(
 
 There are 122,103,667 rows in this data set.
 ```{r}
-labevents_tble <- read_csv(str_c(mimic_path,"/hosp/labevents.csv.gz"),
-                 col_select = c("subject_id","itemid","valuenum","charttime"),
-                 lazy = TRUE)
-dim(labevents_tble)
+#labevents_tble <- read_csv(str_c(mimic_path,"/hosp/labevents.csv.gz"),
+#                 col_select = c("subject_id","itemid","valuenum","charttime"),
+#                lazy = TRUE)
+#dim(labevents_tble)
 ```
 
 
