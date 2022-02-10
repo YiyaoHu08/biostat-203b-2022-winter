@@ -142,39 +142,39 @@ dim(admissions_tble)
 - admission year  
 ```{r}
 library(ggplot2)
-admissions_tble$Year<-year(admissions_tble$admittime)
-ggplot(data=admissions_tble) +
-  geom_bar(mapping = aes(x=Year)) 
+admissions_tble$Year <- year(admissions_tble$admittime)
+ggplot(data = admissions_tble) +
+  geom_bar(mapping = aes(x = Year)) 
 ```
 
 - admission month  
 ```{r}
-admissions_tble$Month<-month(admissions_tble$admittime)
-ggplot(data=admissions_tble) +
-  geom_bar(mapping = aes(x=Month)) +
+admissions_tble$Month <- month(admissions_tble$admittime)
+ggplot(data = admissions_tble) +
+  geom_bar(mapping = aes(x = Month)) +
   scale_x_continuous(breaks = seq(1, 12, 1))
 ```
 
 
 - admission month day  
 ```{r}
-admissions_tble$monthday<-mday(admissions_tble$admittime)
-ggplot(data=admissions_tble) +
-  geom_bar(mapping = aes(x=monthday)) +
+admissions_tble$monthday <- mday(admissions_tble$admittime)
+ggplot(data = admissions_tble) +
+  geom_bar(mapping = aes(x = monthday)) +
   scale_x_continuous(breaks = seq(1, 31, 1))
 ```
 - admission week day  
 ```{r}
-admissions_tble$weekday<-wday(admissions_tble$admittime)
-ggplot(data=admissions_tble) +
-  geom_bar(mapping = aes(x=weekday)) +
+admissions_tble$weekday <- wday(admissions_tble$admittime)
+ggplot(data = admissions_tble) +
+  geom_bar(mapping = aes(x = weekday)) +
   scale_x_continuous(breaks = seq(1, 7, 1))
 ```
 - admission hour (anything unusual?)
 ```{r}
-admissions_tble$hour<-hour(admissions_tble$admittime)
-ggplot(data=admissions_tble) +
-  geom_bar(mapping = aes(x=hour)) +
+admissions_tble$hour <- hour(admissions_tble$admittime)
+ggplot(data = admissions_tble) +
+  geom_bar(mapping = aes(x = hour)) +
   scale_x_continuous(breaks = seq(0, 23, 1))
 ```
 
@@ -216,7 +216,7 @@ group_by(patients_tble,gender) %>%
 ```
 
 ```{r}
-ggplot (data = patients_tble) +
+ggplot(data = patients_tble) +
   geom_histogram(mapping = aes(x = anchor_age ,color = gender), fill="white")
 ```
 
@@ -250,12 +250,12 @@ system(
 
 **Solution:**
 
-There are 16,698,462 rows in this data set.
+There are 122,103,667 rows in this data set.
 ```{r}
-labevents_tble <- as_tibble(read_csv(str_c(mimic_path,"/hosp/labevents.csv.gz"),
-                   col_select = c("subject_id","itemid,valuenum","charttime")),
-                   lazy = TRUE)
-str(labevents_tble)
+labevents_tble <- read_csv(str_c(mimic_path,"/hosp/labevents.csv.gz"),
+                 col_select = c("subject_id","itemid","valuenum","charttime"),
+                 lazy = TRUE)
+dim(labevents_tble)
 ```
 
 
@@ -267,7 +267,7 @@ str(labevents_tble)
 # filter rows
 labevents_tble <- read_csv(str_c(mimic_path,
                   "/hosp/labevents_filtered_itemid.csv.gz")) %>% 
-  semi_join(icustays_tble)
+                   semi_join(icustays_tble)
 dim(labevents_tble)
 ```
 
@@ -299,61 +299,61 @@ labevents_tble %>%
 
 labevents_tble %>% filter(itemid == 50912) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=valuenum)) +
+  geom_histogram(mapping = aes(x = valuenum)) +
   xlim(0,15) +
   ggtitle("creatinine")
 
 labevents_tble %>% filter(itemid == 50971) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=valuenum)) +
+  geom_histogram(mapping = aes(x = valuenum)) +
   xlim(2,6) +
   ggtitle("potassium")
 
 labevents_tble %>% filter(itemid == 50983) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=valuenum)) +
+  geom_histogram(mapping = aes(x = valuenum)) +
   xlim(120,160) +
   ggtitle("sodium")
 
 labevents_tble %>% filter(itemid == 50902) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=valuenum)) +
+  geom_histogram(mapping = aes(x = valuenum)) +
   xlim(70,130) +
   ggtitle("chloride")
 
 labevents_tble %>% filter(itemid == 50882) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=valuenum)) +
+  geom_histogram(mapping = aes(x = valuenum)) +
   xlim(0,50) +
   ggtitle("bicarbonate")
 
 labevents_tble %>% filter(itemid == 51221) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=valuenum)) +
+  geom_histogram(mapping = aes(x = valuenum)) +
   xlim(10,70) +
   ggtitle("hematocrit")
 
 labevents_tble %>% filter(itemid == 51301) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=valuenum)) +
+  geom_histogram(mapping = aes(x = valuenum)) +
   xlim(0,50) +
   ggtitle("white blood cell count")
 
 labevents_tble %>% filter(itemid == 50931) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=valuenum)) +
+  geom_histogram(mapping = aes(x = valuenum)) +
   xlim(0,500) +
   ggtitle("glucose")
 
 labevents_tble %>% filter(itemid == 50960) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=valuenum)) +
+  geom_histogram(mapping = aes(x = valuenum)) +
   xlim(0,5) +
   ggtitle("magnessium")
 
 labevents_tble %>% filter(itemid == 50893) %>%
   ggplot() + 
-  geom_histogram(mapping = aes(x=valuenum)) +
+  geom_histogram(mapping = aes(x = valuenum)) +
   xlim(0,20) +
   ggtitle("calcium")
 ```
@@ -422,25 +422,25 @@ chartevents_tble %>% filter(itemid == 220045) %>%
 
 chartevents_tble %>% filter(itemid == 220181) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=valuenum)) +
+  geom_histogram(mapping = aes(x = valuenum)) +
   xlim(0,300) +
   ggtitle("mean non-invasive blood pressure")
 
 chartevents_tble %>% filter(itemid == 220179) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=valuenum)) +
+  geom_histogram(mapping = aes(x = valuenum)) +
   xlim(0,300) +
   ggtitle("systolic non-invasive blood pressure")
 
 chartevents_tble %>% filter(itemid == 223761) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=valuenum)) +
+  geom_histogram(mapping = aes(x = valuenum)) +
   xlim(75,120) +
   ggtitle("body temperature in Fahrenheit")
 
 chartevents_tble %>% filter(itemid == 220210) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=valuenum)) +
+  geom_histogram(mapping = aes(x = valuenum)) +
   xlim(0,100) +
   ggtitle("respiratory rate")
 ```
@@ -506,41 +506,41 @@ mimic_icu_cohort %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
   geom_bar(mapping = aes(x = ethnicity, 
-                    fill = as.character(thirty_day_mort)), position = "dodge") +
-  theme(axis.text=element_text(size=4),
-        axis.title=element_text(size=14,face="bold"))
+                  fill = as.character(thirty_day_mort)), position = "dodge") +
+  theme(axis.text = element_text(size = 4),
+        axis.title = element_text(size = 14,face = "bold"))
 
 mimic_icu_cohort %>% 
   group_by(thirty_day_mort) %>%
   ggplot() +
   geom_bar(mapping = aes(x = language, 
-                    fill = as.character(thirty_day_mort)), position = "dodge") +
-  theme(axis.text=element_text(size=8),
-        axis.title=element_text(size=14,face="bold"))
+                  fill = as.character(thirty_day_mort)), position = "dodge") +
+  theme(axis.text = element_text(size=8),
+        axis.title = element_text(size = 14,face = "bold"))
 
 mimic_icu_cohort %>% 
   group_by(thirty_day_mort) %>%
   ggplot() +
   geom_bar(mapping = aes(x = insurance, 
-                    fill = as.character(thirty_day_mort)), position = "dodge") +
-  theme(axis.text=element_text(size=8),
-        axis.title=element_text(size=14,face="bold"))
+                   fill = as.character(thirty_day_mort)), position = "dodge") +
+  theme(axis.text = element_text(size = 8),
+        axis.title = element_text(size = 14,face = "bold"))
 
 mimic_icu_cohort %>% 
   group_by(thirty_day_mort) %>%
   ggplot() +
   geom_bar(mapping = aes(x = marital_status, 
-                    fill = as.character(thirty_day_mort)), position = "dodge") +
-  theme(axis.text=element_text(size=8),
-        axis.title=element_text(size=14,face="bold"))
+                   fill = as.character(thirty_day_mort)), position = "dodge") +
+  theme(axis.text = element_text(size = 8),
+        axis.title = element_text(size = 14,face = "bold"))
 
 mimic_icu_cohort %>% 
   group_by(thirty_day_mort) %>%
   ggplot() +
   geom_bar(mapping = aes(x = gender, 
-                    fill = as.character(thirty_day_mort)), position = "dodge") +
-  theme(axis.text=element_text(size=8),
-        axis.title=element_text(size=14,face="bold"))
+                   fill = as.character(thirty_day_mort)), position = "dodge") +
+  theme(axis.text = element_text(size = 8),
+        axis.title = element_text(size = 14,face = "bold"))
 
 mimic_icu_cohort %>% 
   group_by(thirty_day_mort) %>%
@@ -554,7 +554,7 @@ mimic_icu_cohort %>%
 mimic_icu_cohort %>% filter(labitemid == 50912) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=labvaluenum, 
+  geom_histogram(mapping = aes(x = labvaluenum, 
                                fill = as.character(thirty_day_mort))) +
   xlim(0,10) +
   ggtitle("creatinine")
@@ -562,7 +562,7 @@ mimic_icu_cohort %>% filter(labitemid == 50912) %>%
 mimic_icu_cohort %>% filter(labitemid == 50971) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=labvaluenum, 
+  geom_histogram(mapping = aes(x = labvaluenum, 
                                fill = as.character(thirty_day_mort))) +
   xlim(2,6) +
   ggtitle("potassium")
@@ -570,7 +570,7 @@ mimic_icu_cohort %>% filter(labitemid == 50971) %>%
 mimic_icu_cohort %>% filter(labitemid == 50983) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=labvaluenum, 
+  geom_histogram(mapping = aes(x = labvaluenum, 
                                fill = as.character(thirty_day_mort))) +
   xlim(120,160) +
   ggtitle("sodium")
@@ -578,7 +578,7 @@ mimic_icu_cohort %>% filter(labitemid == 50983) %>%
 mimic_icu_cohort %>% filter(labitemid == 50902) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=labvaluenum, 
+  geom_histogram(mapping = aes(x = labvaluenum, 
                                fill = as.character(thirty_day_mort))) +
   xlim(70,130) +
   ggtitle("chloride")
@@ -586,7 +586,7 @@ mimic_icu_cohort %>% filter(labitemid == 50902) %>%
 mimic_icu_cohort %>% filter(labitemid == 50882) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=labvaluenum, 
+  geom_histogram(mapping = aes(x = labvaluenum, 
                                fill = as.character(thirty_day_mort))) +
   xlim(0,50) +
   ggtitle("bicarbonate")
@@ -595,7 +595,7 @@ mimic_icu_cohort %>% filter(labitemid == 50882) %>%
 mimic_icu_cohort %>% filter(labitemid == 51221) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=labvaluenum, 
+  geom_histogram(mapping = aes(x = labvaluenum, 
                                fill = as.character(thirty_day_mort))) +
   xlim(0,70) +
   ggtitle("hematocrit")
@@ -603,7 +603,7 @@ mimic_icu_cohort %>% filter(labitemid == 51221) %>%
 mimic_icu_cohort %>% filter(labitemid == 51301) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=labvaluenum, 
+  geom_histogram(mapping = aes(x = labvaluenum, 
                                fill = as.character(thirty_day_mort))) +
   xlim(0,50) +
   ggtitle("white blood cell count")
@@ -611,7 +611,7 @@ mimic_icu_cohort %>% filter(labitemid == 51301) %>%
 mimic_icu_cohort %>% filter(labitemid == 50931) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=labvaluenum, 
+  geom_histogram(mapping = aes(x = labvaluenum, 
                                fill = as.character(thirty_day_mort))) +
   xlim(0,500) +
   ggtitle("glucose")
@@ -619,7 +619,7 @@ mimic_icu_cohort %>% filter(labitemid == 50931) %>%
 mimic_icu_cohort %>% filter(labitemid == 50960) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=labvaluenum, 
+  geom_histogram(mapping = aes(x = labvaluenum, 
                                fill = as.character(thirty_day_mort))) +
   xlim(0,5) +
   ggtitle("magnessium")
@@ -627,7 +627,7 @@ mimic_icu_cohort %>% filter(labitemid == 50960) %>%
 mimic_icu_cohort %>% filter(labitemid == 50893) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=labvaluenum, 
+  geom_histogram(mapping = aes(x = labvaluenum, 
                                fill = as.character(thirty_day_mort))) +
   xlim(0,20) +
   ggtitle("calcium")
@@ -639,7 +639,8 @@ mimic_icu_cohort %>%
   filter(vitalitemid == 220045) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=vitalvaluenum,fill = as.character(thirty_day_mort)))+
+  geom_histogram(mapping = aes(x = vitalvaluenum,
+                               fill = as.character(thirty_day_mort))) +
   xlim(0,200) +
   ggtitle("heart rate")
 
@@ -647,7 +648,8 @@ mimic_icu_cohort %>%
   filter(vitalitemid == 220181) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=vitalvaluenum,fill = as.character(thirty_day_mort)))+
+  geom_histogram(mapping = aes(x = vitalvaluenum,
+                               fill = as.character(thirty_day_mort))) +
   xlim(0,200) +
   ggtitle("mean non-invasive blood pressure")
 
@@ -655,7 +657,8 @@ mimic_icu_cohort %>%
   filter(vitalitemid == 220179) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=vitalvaluenum,fill = as.character(thirty_day_mort)))+
+  geom_histogram(mapping = aes(x = vitalvaluenum,
+                               fill = as.character(thirty_day_mort))) +
   xlim(0,300) +
   ggtitle("systolic non-invasive blood pressure")
 
@@ -663,7 +666,8 @@ mimic_icu_cohort %>%
   filter(vitalitemid == 223761) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=vitalvaluenum,fill = as.character(thirty_day_mort)))+
+  geom_histogram(mapping = aes(x = vitalvaluenum,
+                               fill = as.character(thirty_day_mort)))+
   xlim(75,120) +
   ggtitle("body temperature in Fahrenheit")
 
@@ -671,7 +675,8 @@ mimic_icu_cohort %>%
   filter(vitalitemid == 220210) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
-  geom_histogram(mapping = aes(x=vitalvaluenum,fill = as.character(thirty_day_mort)))+
+  geom_histogram(mapping = aes(x = vitalvaluenum,
+                               fill = as.character(thirty_day_mort))) +
   xlim(0, 100) +
   ggtitle("respiratory rate")
 ```
@@ -679,14 +684,15 @@ mimic_icu_cohort %>%
 - `thirty_day_mort` vs first ICU unit
 ```{r}
 ggplot (data = patients_tble) +
-  geom_histogram(mapping = aes(x = anchor_age ,color = gender), fill="white")
+  geom_histogram(mapping = aes(x = anchor_age ,color = gender), fill = "white")
 
 mimic_icu_cohort %>%
   ggplot() +
-  geom_bar(mapping = aes(x=first_careunit, fill=as.character(thirty_day_mort)),
+  geom_bar(mapping = aes(x = first_careunit, 
+                         fill = as.character(thirty_day_mort)),
                         position = "stack") +
   ggtitle("") +
-  theme(text = element_text(size=8),
-        axis.text.x = element_text(angle=30, vjust=1)) 
+  theme(text = element_text(size = 8),
+        axis.text.x = element_text(angle = 30, vjust = 1)) 
 ```
 
