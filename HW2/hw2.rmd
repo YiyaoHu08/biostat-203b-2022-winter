@@ -384,22 +384,24 @@ system(
 
 1. We are interested in the vitals for ICU patients: heart rate (220045), mean non-invasive blood pressure (220181), systolic non-invasive blood pressure (220179), body temperature in Fahrenheit (223761), and respiratory rate (220210). Retrieve a subset of `chartevents.csv.gz` only containing these items for the patients in `icustays_tble` as a tibble `chartevents_tble`.
 ```{r}
-filtered_chartevents_tble <- as_tibble(read_csv(str_c(mimic_path,
-                                  "/icu/chartevents_filtered_itemid.csv.gz")))
-chartevents_tble <- semi_join(filtered_chartevents_tble,icubyid)
+chartevents_tble <- as_tibble(read_csv(str_c(mimic_path,
+                              "/icu/chartevents_filtered_itemid.csv.gz"))) %>%
+                    semi_join(icustays_tble)
+dim(chartevents_tble)
 ```
 
 
 2. Further restrict `chartevents_tble` to the first vital measurement during the ICU stay. 
 ```{r}
 # Keep only the first measurement
-chartevents_tble_1st <- group_by(chartevents_tble,subject_id) %>%
+chartevents_tble <- group_by(chartevents_tble,subject_id) %>%
   distinct(subject_id, .keep_all = TRUE)
+dim(chartevents_tble)
 ```
 
 3. Summarize these vital measurements by appropriate numerics and graphics. 
 ```{r}
-chartevents_tble_1st %>% 
+chartevents_tble %>% 
   group_by(itemid) %>%
   summarise(count  = n(),
             mean   = mean(valuenum, na.rm = TRUE),
@@ -412,31 +414,31 @@ chartevents_tble_1st %>%
 
 ```{r}
 
-chartevents_tble_1st %>% filter(itemid == 220045) %>%
+chartevents_tble %>% filter(itemid == 220045) %>%
   ggplot() +
   geom_histogram(mapping = aes(x=valuenum)) +
   xlim(0,200) +
   ggtitle("heart rate")
 
-chartevents_tble_1st %>% filter(itemid == 220181) %>%
+chartevents_tble %>% filter(itemid == 220181) %>%
   ggplot() +
   geom_histogram(mapping = aes(x=valuenum)) +
-  xlim(0,200) +
+  xlim(0,300) +
   ggtitle("mean non-invasive blood pressure")
 
-chartevents_tble_1st %>% filter(itemid == 220179) %>%
+chartevents_tble %>% filter(itemid == 220179) %>%
   ggplot() +
   geom_histogram(mapping = aes(x=valuenum)) +
   xlim(0,300) +
   ggtitle("systolic non-invasive blood pressure")
 
-chartevents_tble_1st %>% filter(itemid == 223761) %>%
+chartevents_tble %>% filter(itemid == 223761) %>%
   ggplot() +
   geom_histogram(mapping = aes(x=valuenum)) +
   xlim(75,120) +
   ggtitle("body temperature in Fahrenheit")
 
-chartevents_tble_1st %>% filter(itemid == 220210) %>%
+chartevents_tble %>% filter(itemid == 220210) %>%
   ggplot() +
   geom_histogram(mapping = aes(x=valuenum)) +
   xlim(0,100) +
@@ -474,10 +476,6 @@ labevents_tble_1st_labvalue <- group_by(labevents_tble,subject_id) %>%
   mutate(labitemid = itemid,
          labvaluenum = valuenum) %>%
   select(labitemid, labvaluenum)
-
-# str(icustays_tble_1st)
-# str(chartevents_tble_1st)
-#str(labevents_tble_1st_labvalue)
 
 mimic_icu_cohort <- icustays_tble_1st %>% 
   inner_join(admissions_tble) %>%
@@ -553,8 +551,91 @@ mimic_icu_cohort %>%
 
 - `thirty_day_mort` vs first lab measurements
 ```{r}
+mimic_icu_cohort %>% filter(labitemid == 50912) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0,10) +
+  ggtitle("creatinine")
 
-pa <- mimic_icu_cohort %>% 
+mimic_icu_cohort %>% filter(labitemid == 50971) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(2,6) +
+  ggtitle("potassium")
+
+mimic_icu_cohort %>% filter(labitemid == 50983) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(120,160) +
+  ggtitle("sodium")
+
+mimic_icu_cohort %>% filter(labitemid == 50902) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(70,130) +
+  ggtitle("chloride")
+
+mimic_icu_cohort %>% filter(labitemid == 50882) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0,50) +
+  ggtitle("bicarbonate")
+
+
+mimic_icu_cohort %>% filter(labitemid == 51221) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0,70) +
+  ggtitle("hematocrit")
+
+mimic_icu_cohort %>% filter(labitemid == 51301) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0,50) +
+  ggtitle("white blood cell count")
+
+mimic_icu_cohort %>% filter(labitemid == 50931) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0,500) +
+  ggtitle("glucose")
+
+mimic_icu_cohort %>% filter(labitemid == 50960) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0,5) +
+  ggtitle("magnessium")
+
+mimic_icu_cohort %>% filter(labitemid == 50893) %>%
+  group_by(thirty_day_mort) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(x=labvaluenum, 
+                               fill = as.character(thirty_day_mort))) +
+  xlim(0,20) +
+  ggtitle("calcium")
+```
+
+- `thirty_day_mort` vs first vital measurements
+```{r}
+mimic_icu_cohort %>% 
   filter(vitalitemid == 220045) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
@@ -562,7 +643,7 @@ pa <- mimic_icu_cohort %>%
   xlim(0,200) +
   ggtitle("heart rate")
 
-pb <- mimic_icu_cohort %>% 
+mimic_icu_cohort %>% 
   filter(vitalitemid == 220181) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
@@ -570,7 +651,7 @@ pb <- mimic_icu_cohort %>%
   xlim(0,200) +
   ggtitle("mean non-invasive blood pressure")
 
-pc <- mimic_icu_cohort %>% 
+mimic_icu_cohort %>% 
   filter(vitalitemid == 220179) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
@@ -578,7 +659,7 @@ pc <- mimic_icu_cohort %>%
   xlim(0,300) +
   ggtitle("systolic non-invasive blood pressure")
 
-pd <- mimic_icu_cohort %>% 
+mimic_icu_cohort %>% 
   filter(vitalitemid == 223761) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
@@ -586,35 +667,26 @@ pd <- mimic_icu_cohort %>%
   xlim(75,120) +
   ggtitle("body temperature in Fahrenheit")
 
-pe <- mimic_icu_cohort %>% 
+mimic_icu_cohort %>% 
   filter(vitalitemid == 220210) %>%
   group_by(thirty_day_mort) %>%
   ggplot() +
   geom_histogram(mapping = aes(x=vitalvaluenum,fill = as.character(thirty_day_mort)))+
   xlim(0, 100) +
   ggtitle("respiratory rate")
-
-
-
-```
-
-- `thirty_day_mort` vs first vital measurements
-```{r}
-mimic_icu_cohort %>% 
-  group_by(vitalitemid) %>%
-  ggplot() + 
-  geom_bar(mapping = aes(x = vitalvaluenum))
 ```
 
 - `thirty_day_mort` vs first ICU unit
 ```{r}
-p1 <- ggplot(mtcars, aes(mpg, wt, colour = factor(cyl))) +
-  geom_point()+ theme_article() + theme(legend.position = 'top') 
-p2 <- ggplot(mtcars, aes(mpg, wt, colour = factor(cyl))) +
-  geom_point() + facet_wrap(~ cyl, ncol = 2, scales = "free") +
-  guides(colour = "none") +
-  theme_article()
-  
-ggarrange(p1, p2, widths = c(1.5,2))
+ggplot (data = patients_tble) +
+  geom_histogram(mapping = aes(x = anchor_age ,color = gender), fill="white")
+
+mimic_icu_cohort %>%
+  ggplot() +
+  geom_bar(mapping = aes(x=first_careunit, fill=as.character(thirty_day_mort)),
+                        position = "stack") +
+  ggtitle("") +
+  theme(text = element_text(size=8),
+        axis.text.x = element_text(angle=30, vjust=1)) 
 ```
 
