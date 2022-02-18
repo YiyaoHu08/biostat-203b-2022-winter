@@ -198,7 +198,7 @@ pre code {
 <ul>
 <li><p>Q6 (20/20)</p></li>
 <li><p>Q7 (14/20)</p>
-<p>Close. When it comes to your attempt to extract the first value, we prefer to not use “distinct”. We prefer arrange(charttime, .by_group = TRUE) %&gt;% slice_head(n = 1) %&gt;% I think this is the reason why it is off, but I could be wrong. Further, you can condense your last pipeset into the one before it. <code>-6</code>. The final dataset should be 53065 rows.</p></li>
+<p>Close. When it comes to your attempt to extract the first value, we prefer to not use “distinct”. We prefer arrange(charttime, .by_group = TRUE) %&gt;% slice_head(n = 1) %&gt;% I think this is the reason why it is off, but I could be wrong. It is either this or the fact that you are using inner_join instead of left_join. The final dataset should be 53065 rows. Further, you can condense your last pipeset into the one before it. <code>-6</code>.</p></li>
 <li><p>Q8 (10/10)</p></li>
 </ul>
 </div>

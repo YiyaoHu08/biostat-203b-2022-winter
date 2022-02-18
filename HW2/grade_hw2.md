@@ -43,7 +43,7 @@ Make sure they get right answer, e.g., (1) need to filter out `chartime` outside
     Close. When it comes to your attempt to extract the first value, we prefer to not use "distinct".   We prefer
     arrange(charttime, .by_group = TRUE) %>%
       slice_head(n = 1) %>%
-    I think this is the reason why it is off, but I could be wrong. Further, you can condense your last pipeset into the one before it. `-6`. The final dataset should be 53065 rows.
+    I think this is the reason why it is off, but I could be wrong. It is either this or the fact that you are using inner_join instead of left_join. The final dataset should be 53065 rows. Further, you can condense your last pipeset into the one before it. `-6`. 
     
 - Q8 (10/10)
 
