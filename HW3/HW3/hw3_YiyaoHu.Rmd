@@ -84,12 +84,24 @@ icustays_tble <- icustays_tble %>%
 4. Connect to the `admissions` table and only keep the patients who have a match in `icustays_tble` (according to `subject_id` and `hadm_id`).
 ```{r}
 # # TODO
-# admissions_tble <- 
+admission_tble <- tbl(con, "admissions") %>%
+  show_query() %>%
+  print(width = Inf)
+
+admissions_tble <- admission_tble %>%
+  select(subject_id, hadm_id) %>%
+  group_by(subject_id) %>%
+  right_join(icustays_tble,by = c("subject_id", "hadm_id")) %>%
+  show_query() %>%
+  print(width = Inf)
+
 ```
 
 5. Connect to the `patients` table and only keep the patients who have a match in `icustays_tble` (according to `subject_id`).
 ```{r}
 # # TODO
+
+
 # patients_tble <-
 ```
 
