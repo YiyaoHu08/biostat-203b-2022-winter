@@ -125,7 +125,13 @@ labevents_tble <- labevents_tble %>%
 Only keep the first lab measurements during ICU stay and pivot lab items to become variables/columns.
 ```{r}
 # # TODO
-# labevents_tble <- labevents_tble %>% ...
+labevents_tble <- labevents_tble %>% 
+  select (subject_id) %>%
+  group_by(subject_id) %>%
+  summarise_all(min) %>%
+  left_join(labevents_tble, by = c("subject_id")) %>%
+  show_query() %>%
+  print(width = Inf)
 ```
 
 7. Connect to `chartevents` table and retrieve a subset that only contain subjects who appear in `icustays_tble` and the chart events listed in HW2.
