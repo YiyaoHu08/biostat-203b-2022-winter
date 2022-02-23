@@ -68,6 +68,7 @@ dbListTables(con)
 icustays_tble <- tbl(con, "icustays") %>%
   show_query() %>%
   print(width = Inf)
+
 ```
 We only keep the first ICU stay. Following code is kind of a hack, using the `summarise_all(min)` function. It seems that `slice_min()`, `slice_head()`, `distinct(, .keep_all = TRUE)` don't work with `dbplyr`+`bigrquery` at the moment.
 ```{r}
@@ -89,26 +90,37 @@ admission_tble <- tbl(con, "admissions") %>%
   print(width = Inf)
 
 admissions_tble <- admission_tble %>%
-  select(subject_id, hadm_id) %>%
-  group_by(subject_id) %>%
-  right_join(icustays_tble,by = c("subject_id", "hadm_id")) %>%
+  semi_join(icustays_tble) %>%
   show_query() %>%
   print(width = Inf)
-
 ```
 
 5. Connect to the `patients` table and only keep the patients who have a match in `icustays_tble` (according to `subject_id`).
 ```{r}
 # # TODO
+patients_tble <- tbl(con, "patients") %>%
+  show_query() %>%
+  print(width = Inf)
 
-
-# patients_tble <-
+patients_tble <- patients_tble %>%
+  semi_join(icustays_tble) %>%
+  show_query() %>%
+  print(width = Inf)
 ```
 
 6. Connect to the `labevents` table and retrieve a subset that only contain subjects who appear in `icustays_tble` and the lab items listed in HW2. 
 ```{r}
 # # TODO
-# labevents_tble <- 
+labevents_tble <- tbl(con, "labevents") %>%
+  show_query() %>%
+  print(width = Inf)
+
+labevents_tble <- labevents_tble %>%
+  semi_join(icustays_tble) %>%
+  filter(itemid %in% c(50912, 50971, 50983, 50902, 50882, 51221, 51301, 
+                       50931, 50960, 50893)) %>%
+  show_query() %>%
+  print(width = Inf)
 ```
 Only keep the first lab measurements during ICU stay and pivot lab items to become variables/columns.
 ```{r}
