@@ -50,6 +50,13 @@ ui <- fluidPage(
                             "223761 - body temperature in Fahrenheit", 
                             "220210 - respiratory rate"),
                   selected = "Percent White"),
+      
+      selectInput("var4",
+                  label = "Show firts ICU unit",
+                  choices = c("first ICU unit"),
+                  selected = "Percent White"),
+      
+      
     ),
     
     mainPanel(plotOutput("plot_demography"),
