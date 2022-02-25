@@ -904,7 +904,7 @@ icu_cohort &lt;- icustays_tble %&gt;%
   mutate(alive_days_before_death = day(dod) - day(admittime)) %&gt;%
   mutate(thirty_day_mort = alive_days_before_death &lt; 30) %&gt;%
   print(width = Inf) %&gt;%
-  write_rds(&quot;mimiciv_shiny/icu_cohort.rds&quot;)</code></pre>
+  write_rds(&quot;mimiciv_shiny/icu_cohort .rds&quot;)</code></pre>
 <pre><code>## # Source:   lazy query [?? x 52]
 ## # Database: BigQueryConnection
 ##    subject_id intime              hadm_id_x stay_id_x first_careunit

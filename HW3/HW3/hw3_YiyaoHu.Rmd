@@ -59,7 +59,7 @@ con
 
 2. List all tables in the `mimic4_v1_0_203b` database.
 ```{r}
-dbListTables(con)
+dbListTables(con) 
 ```
 
 3. Connect to the `icustays` table.
