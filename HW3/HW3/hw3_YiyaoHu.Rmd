@@ -1,5 +1,6 @@
 ---
 title: "Biostat 203B Homework 3_YiyaoHu"
+author: "Yiyao Hu @ UCLA"
 subtitle: Due Feb 25 @ 11:59PM
 output:
   # ioslides_presentation: default
