@@ -1,0 +1,102 @@
+---
+title: "Biostat 203B Homework 4"
+subtitle: Due Mar 18 @ 11:59PM
+author: Yiyao Hu
+output:
+  # ioslides_presentation: default
+  html_document:
+    toc: true
+    toc_depth: 4
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+Display machine information:
+```{r}
+sessionInfo()
+```
+Load database libraries and the tidyverse frontend:
+```{r}
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(lubridate))
+suppressPackageStartupMessages(library(miceRanger))
+```
+
+## Q1. Missing data
+
+Through the Shiny app developed in HW3, we observe abundant missing values in the MIMIC-IV ICU cohort we created. In this question, we use multiple imputation to obtain a data set without missing values.
+
+0. Read following tutorials on the R package miceRanger for imputation: <https://github.com/farrellday/miceRanger>, <https://cran.r-project.org/web/packages/miceRanger/vignettes/miceAlgorithm.html>.
+
+    A more thorough book treatment of the practical imputation strategies is the book [*_Flexible Imputation of Missing Data_*](https://stefvanbuuren.name/fimd/) by Stef van Buuren. 
+
+
+1. Explain the jargon MCAR, MAR, and MNAR.
+
+**Solutions:**
+
+Reference: https://stats.oarc.ucla.edu/stata/seminars/mi_in_stata_pt1_new 
+
+"Missing completely at random (MCAR)
+A variable is missing completely at random, if neither the variables in the dataset nor the unobserved value of the variable itself predict whether a value will be missing. Missing completely at random is a fairly strong assumption and may be relatively rare. One relatively common situation in which data are missing completely at random occurs when a subset of cases is randomly selected to undergo additional measurement, this is sometimes referred to as “planned missing.” For example, in some health surveys, some subjects are randomly selected to undergo more extensive physical examination; therefore only a subset of participants will have complete information for these variables. Missing completely at random also allow for missing on one variable to be related to missing on another, e.g. var1 is missing whenever var2 is missing. For example, a husband and wife are both missing information on height."
+
+"Missing at random (MAR)
+A variable is said to be missing at random if other variables (but not the variable itself) in the dataset can be used to predict missingness on a given variable. For example, in surveys, men may be more likely to decline to answer some questions than women (i.e., gender predicts missingness on another variable). MAR is a less restrictive assumption than MCAR.  Under this assumption the probability of missingness does not depend on the true values after controlling for the observed variables. MAR is also related to ignorability. The missing data mechanism is said be ignorable if it is missing at random and the probability of a missingness does not depend on the missing information itself. The assumption of ignorability is needed for optimal estimation of missing information and is a required assumption for both of the missing data techniques we will discuss."
+
+"Missing not at random (MNAR)
+Finally, data are said to be missing not at random if the value of the unobserved variable itself predicts missingness. A classic example of this is income.  Individuals with very high incomes are more likely to decline to answer questions about their income than individuals with more moderate incomes."
+
+"An understanding of the missing data mechanism(s) present in your data is important because different types of missing data require different treatments. When data are missing completely at random, analyzing only the complete cases will not result in biased parameter estimates (e.g., regression coefficients). However, the sample size for an analysis can be substantially reduced, leading to larger standard errors. In contrast, analyzing only complete cases for data that are either missing at random, or missing not at random can lead to biased parameter estimates. Multiple imputation and other modern methods such as direct maximum likelihood generally assumes that the data are at least MAR, meaning that this procedure can also be used on data that are missing completely at random. Statistical models have also been developed for modeling the MNAR processes; however, these model are beyond the scope of this seminar."
+
+
+
+
+
+2. Explain in a couple of sentences how the Multiple Imputation by Chained Equations (MICE) work.
+
+**Solution:**
+
+Reference: 
+
+           1) https://stats.oarc.ucla.edu/stata/seminars/mi_in_stata_pt1_new 
+
+           2) https://cran.r-project.org/web/packages/miceRanger/vignettes/miceAlgorithm.html
+           
+           3）https://github.com/farrellday/miceRanger
+           
+           4）https://www.rdocumentation.org/packages/miceRanger/versions/1.3.4/topics/miceRanger 
+
+Overall Principle:
+
+"miceRanger can make use of a procedure called predictive mean matching (PMM) to select which values are imputed. PMM involves selecting a datapoint from the original, nonmissing data which has a predicted value close to the predicted value of the missing sample. The closest N (meanMatchCandidates parameter in miceRanger()) values are chosen as candidates, from which a value is chosen at random. "
+
+
+This method is very useful if you have a variable which needs imputing which has any of the following characteristics: Multimodal, Integer, Skewed
+
+Common Use Cases of MICE
+1) Data Leakage 2) Integer  3) Skewed
+
+
+
+
+
+3. Perform a data quality check of the ICU stays data. Discard variables with substantial missingness, say >5000 `NA`s. Replace apparent data entry errors by `NA`s.
+
+4. Impute missing values by `miceRanger` (request $m=3$ data sets). This step is computational intensive. Make sure to save the imputation results as a file. Hint: Setting `max.depth=10` in the `miceRanger` function may cut some computing time.
+
+5. Make imputation diagnostic plots and explain what they mean.
+
+6. Choose one of the imputed data sets to be used in Q2. This is **not** a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy is.
+
+## Q2. Predicting 30-day mortality
+
+Develop at least two analytic approaches for predicting the 30-day mortality of patients admitted to ICU using demographic information (gender, age, marital status, ethnicity), first lab measurements during ICU stay, and first vital measurements during ICU stay. For example, you can use (1) logistic regression (`glm()` function in base R or keras), (2) logistic regression with lasso penalty (glmnet or keras package), (3) random forest (randomForest package), or (4) neural network (keras package).
+
+1. Partition data into 80% training set and 20% test set. Stratify partitioning according the 30-day mortality status.
+
+2. Train the models using the training set.
+
+3. Compare model prediction performance on the test set.
+
