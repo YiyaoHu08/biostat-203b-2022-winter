@@ -486,7 +486,25 @@ na_count2</code></pre>
 ## length                      18
 ## thirty_day_mort              0</code></pre>
 <ol start="4" style="list-style-type: decimal">
-<li><p>Impute missing values by <code>miceRanger</code> (request <span class="math inline">\(m=3\)</span> data sets). This step is computational intensive. Make sure to save the imputation results as a file. Hint: Setting <code>max.depth=10</code> in the <code>miceRanger</code> function may cut some computing time.</p></li>
+<li>Impute missing values by <code>miceRanger</code> (request <span class="math inline">\(m=3\)</span> data sets). This step is computational intensive. Make sure to save the imputation results as a file. Hint: Setting <code>max.depth=10</code> in the <code>miceRanger</code> function may cut some computing time.</li>
+</ol>
+<pre class="r"><code>#miceObj &lt;- miceRanger(
+#      icu_cohort
+#    , m=3
+#    , returnModels = TRUE
+#    , verbose = FALSE
+#    , max.depth = 10
+#  )</code></pre>
+<p>Save the imputation results as a file</p>
+<pre class="r"><code>#dataList &lt;- completeData(miceObj)
+#imputed_data1 = dataList$Dataset_1
+#imputed_data2 = dataList$Dataset_2
+#imputed_data3 = dataList$Dataset_3
+#save(imputed_data1, imputed_data2, imputed_data3, file = &quot;imputed_data.RData&quot;)</code></pre>
+<pre class="r"><code>#na_count3 &lt;-sapply(imputed_data1, function(x) sum(is.na(x)))
+#na_count3 &lt;- data.frame(na_count3)
+#na_count3</code></pre>
+<ol start="5" style="list-style-type: decimal">
 <li><p>Make imputation diagnostic plots and explain what they mean.</p></li>
 <li><p>Choose one of the imputed data sets to be used in Q2. This is <strong>not</strong> a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy is.</p></li>
 </ol>

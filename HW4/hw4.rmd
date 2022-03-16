@@ -164,6 +164,32 @@ na_count2
 
 4. Impute missing values by `miceRanger` (request $m=3$ data sets). This step is computational intensive. Make sure to save the imputation results as a file. Hint: Setting `max.depth=10` in the `miceRanger` function may cut some computing time.
 
+```{r}
+#miceObj <- miceRanger(
+#      icu_cohort
+#    , m=3
+#    , returnModels = TRUE
+#    , verbose = FALSE
+#    , max.depth = 10
+#  )
+```
+
+Save the imputation results as a file
+```{r}
+#dataList <- completeData(miceObj)
+#imputed_data1 = dataList$Dataset_1
+#imputed_data2 = dataList$Dataset_2
+#imputed_data3 = dataList$Dataset_3
+#save(imputed_data1, imputed_data2, imputed_data3, file = "imputed_data.RData")
+```
+
+```{r}
+#na_count3 <-sapply(imputed_data1, function(x) sum(is.na(x)))
+#na_count3 <- data.frame(na_count3)
+#na_count3
+```
+
+
 5. Make imputation diagnostic plots and explain what they mean.
 
 6. Choose one of the imputed data sets to be used in Q2. This is **not** a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy is.
