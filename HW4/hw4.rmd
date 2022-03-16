@@ -84,6 +84,84 @@ Common Use Cases of MICE
 
 3. Perform a data quality check of the ICU stays data. Discard variables with substantial missingness, say >5000 `NA`s. Replace apparent data entry errors by `NA`s.
 
+Step 1: 
+
+Import `icustatys.csv.gz` as a tibble `icustays_tble`. 
+```{r}
+icu_cohort <- readRDS("~/Biostat-203b-winter-2022/HW4/icu_cohort.rds")
+```
+
+Step 2:
+
+Perform a data quality check of the ICU stays data and drop variables with substantial missing data.
+
+The following variables have substantial missingness (> 5000 NAS):
+```{r}
+na_count <-sapply(icu_cohort, function(x) sum(is.na(x)))
+na_count <- data.frame(na_count)
+na_count
+```
+
+```{r}
+# get names of variables with substantial missingness (>5000 NAs)
+Miss_var <-row.names(na_count)[apply(na_count, 2, function(i) which(i > 5000))]
+Miss_var
+
+
+# Drop these variables from the table
+icu_cohort <- subset(icu_cohort, select = -c(deathtime, edregtime,
+                                             edouttime, dod))
+```
+
+Step 3:
+
+The summary shows the following variable might have error inpput:
+
+1) los   2) labvaluenum  3) vitalvaluenum   4) length
+```{r}
+# Check basic info of each of the 33 variables
+dim(icu_cohort)
+summary(icu_cohort)
+```
+
+```{r}
+# Check these four variables
+# 1) los  - values lager than 40 may be thought as error inputs (or Outlier?)
+summary(icu_cohort$los)
+hist(icu_cohort$los)
+tail(sort(icu_cohort$los),100)
+
+# 2) labvaluenum - values lager than 200 cmay be thought as error (Outlier?)
+summary(icu_cohort$labvaluenum)
+hist(icu_cohort$labvaluenum)
+tail(sort(icu_cohort$labvaluenum),100)
+
+# 3) vitalvalunum - the value of 3333330 must be wrong
+summary(icu_cohort$vitalvaluenum)
+hist(icu_cohort$vitalvaluenum)
+tail(sort(icu_cohort$vitalvaluenum),100)
+
+# 4) length-values lager than 100 may be thought as error inputs (or Outlier?)
+summary(icu_cohort$length)
+hist(icu_cohort$length)
+tail(sort(icu_cohort$length),100)
+```
+Replace these errors or outliers with N/A
+```{r}
+icu_cohort$los[icu_cohort$los > 40]  <- NA
+icu_cohort$labvaluenum[icu_cohort$labvaluenum > 200]  <- NA
+icu_cohort$vitalvaluenum[icu_cohort$vitalvaluenum>1000]  <- NA
+icu_cohort$length[icu_cohort$length>100]  <- NA
+```
+
+Check the missing info for the upadted table
+```{r}
+na_count2 <-sapply(icu_cohort, function(x) sum(is.na(x)))
+na_count2 <- data.frame(na_count2)
+na_count2
+```
+
+
 4. Impute missing values by `miceRanger` (request $m=3$ data sets). This step is computational intensive. Make sure to save the imputation results as a file. Hint: Setting `max.depth=10` in the `miceRanger` function may cut some computing time.
 
 5. Make imputation diagnostic plots and explain what they mean.
