@@ -241,9 +241,7 @@ reference: https://stats.oarc.ucla.edu/sas/seminars/multiple-imputation-in-sas/m
 3. Pooling Phase: The parameter estimates (e.g. coefficients and standard errors) obtained from each analyzed data set are then combined for inference."
 
 So a proper strategy is to obtain the ideally final parameter estimates by combining the parameter estimates obtained from each analysis which may use different models.
-```{r}
 
-```
 
 
 ## Q2. Predicting 30-day mortality
