@@ -249,6 +249,58 @@ So a proper strategy is to obtain the ideally final parameter estimates by combi
 Develop at least two analytic approaches for predicting the 30-day mortality of patients admitted to ICU using demographic information (gender, age, marital status, ethnicity), first lab measurements during ICU stay, and first vital measurements during ICU stay. For example, you can use (1) logistic regression (`glm()` function in base R or keras), (2) logistic regression with lasso penalty (glmnet or keras package), (3) random forest (randomForest package), or (4) neural network (keras package).
 
 1. Partition data into 80% training set and 20% test set. Stratify partitioning according the 30-day mortality status.
+```{r}
+ load("~/Biostat-203b-winter-2022/HW4/imputed_data1.RData")
+#stratify the data into two groups according to the binary variable
+thiry_day_mortality_status0 <- imputed_data1[imputed_data1$thirty_day_mort == 0]
+thiry_day_mortality_status1 <- imputed_data1[imputed_data1$thirty_day_mort == 1]
+dim(thiry_day_mortality_status0)
+dim(thiry_day_mortality_status1)
+
+
+
+## for thiry_day_mortality_status = 0
+# Get the number of observations
+n_obs0 <- nrow(thiry_day_mortality_status0)
+# Shuffle row indices: permuted_rows
+permuted_rows0 <- sample(n_obs0)
+# Randomly order data
+my_data0 <- thiry_day_mortality_status0[permuted_rows0, ]
+# Identify row to split on: split
+split0 <- n_obs0 *0.8
+# Training set + Test set
+train_data0 <- thiry_day_mortality_status0[ 1:split0, ]
+test_data0 <- thiry_day_mortality_status0[(split0+1):n_obs0, ]
+dim(thiry_day_mortality_status0)
+dim(train_data0)
+dim(test_data0)
+
+
+## for thiry_day_mortality_status = 1
+# Get the number of observations
+n_obs1 <- nrow(thiry_day_mortality_status1)
+# Shuffle row indices: permuted_rows
+permuted_rows1 <- sample(n_obs1)
+# Randomly order data
+my_data1 <- thiry_day_mortality_status1[permuted_rows1, ]
+# Identify row to split on: split
+split1 <- round(n_obs1 *0.8)
+# Training set + Test set
+train_data1 <- thiry_day_mortality_status1[ 1:split1, ]
+test_data1 <- thiry_day_mortality_status1[(split1+1):(n_obs1), ]
+dim(thiry_day_mortality_status1)
+dim(train_data1)
+dim(test_data1)
+
+
+# Assmble the training and testing sets
+training_set <- rbind(train_data0, train_data1)
+dim(training_set)
+testing_set <- rbind(test_data0, test_data1)
+dim(testing_set)
+dim(icu_cohort)
+```
+
 
 2. Train the models using the training set.
 
