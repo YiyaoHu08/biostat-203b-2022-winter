@@ -252,6 +252,10 @@ Develop at least two analytic approaches for predicting the 30-day mortality of 
 ```{r}
  load("~/Biostat-203b-winter-2022/HW4/imputed_data1.RData")
 #stratify the data into two groups according to the binary variable
+
+set.seed(123)
+imputed_data1 <- imputed_data1 %>% 
+  mutate(age = anchor_age + year(admittime) - anchor_year)
 thiry_day_mortality_status0 <- imputed_data1[imputed_data1$thirty_day_mort == 0]
 thiry_day_mortality_status1 <- imputed_data1[imputed_data1$thirty_day_mort == 1]
 dim(thiry_day_mortality_status0)
@@ -302,7 +306,81 @@ dim(icu_cohort)
 ```
 
 
-2. Train the models using the training set.
+2. Train the 2 models using the training set.
 
-3. Compare model prediction performance on the test set.
+Model 1: GLM (thirty_day_mort ~ gender + age+ ethnicity + marital_status + labvaluenum +vitalvaluenum)
+```{r}
+training_set$gender <- as.factor(training_set$gender)
+training_set$ethnicity  <- as.factor(training_set$ethnicity )
+training_set$marital_status  <- as.factor(training_set$marital_status)
+
+
+model1 <- glm(thirty_day_mort ~ gender + age+ ethnicity + marital_status + 
+                   labvaluenum +vitalvaluenum, data = training_set, 
+                  family = 'binomial')
+
+summary(model1)
+```
+
+Model 2: Fit the lasso penalized regression model:
+```{r}
+library(glmnet)
+set.seed(345) 
+modeldata <-  training_set %>% 
+  select(thirty_day_mort, gender, age, ethnicity, marital_status, 
+                   labvaluenum, vitalvaluenum)
+
+# Dumy code categorical predictor variables
+x <- model.matrix(thirty_day_mort ~. , modeldata)[,-1]
+y <- modeldata$thirty_day_mort
+
+# Find the best lambda using cross-validation
+set.seed(123) 
+cv.lasso <- cv.glmnet(x, y, alpha = 1, family = "binomial")
+
+# Fit the final model on the training data
+model2 <- glmnet(x, y, alpha = 1, family = "binomial",
+                lambda = cv.lasso$lambda.min)
+
+# Display regression coefficients
+coef(model)
+```
+
+
+3. Compare model prediction performance on the set.
+
+The two models did the same well as for predictive accuracy.
+
+Model 1: 
+```{r}
+# Make predictions on the test data
+new_x <-  training_set %>% 
+  select(thirty_day_mort, gender, age, ethnicity, marital_status, 
+                   labvaluenum, vitalvaluenum)
+
+possibility <- predict(model1, newx=new_x,  type="response") # predicted values
+predicted <- ifelse(possibility > 0.5, 1, 0)
+
+# Model accuracy
+observed <- training_set$thirty_day_mort
+mean(predicted == observed)
+```
+
+
+
+Model 2:
+```{r}
+# Make predictions on the test data
+# Dumy code categorical predictor variables
+modeldata2 <-  training_set %>% 
+  select(thirty_day_mort, gender, age, ethnicity, marital_status, 
+                   labvaluenum, vitalvaluenum)
+x.test <- model.matrix(thirty_day_mort ~. , modeldata2)[,-1]
+probabilities <- model2 %>% predict(newx = x.test)
+predicted.classes <- ifelse(probabilities > 0.5, 1, 0)
+
+# Model accuracy
+observed.classes <- modeldata2$thirty_day_mort
+mean(predicted.classes == observed.classes)
+```
 
