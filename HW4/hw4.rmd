@@ -228,6 +228,22 @@ plotVarImportance(miceObj)
 
 6. Choose one of the imputed data sets to be used in Q2. This is **not** a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy is.
 
+**Solutions:**
+reference: https://stats.oarc.ucla.edu/sas/seminars/multiple-imputation-in-sas/mi_new_1/
+"MI has three basic phases:
+
+1. Imputation or Fill-in Phase: The missing data are filled in with estimated values and a complete data set is created. This process of fill-in is repeated m times.
+
+2. Analysis Phase: Each of the m complete data sets is then analyzed using a statistical method of interest (e.g. linear regression).
+
+3. Pooling Phase: The parameter estimates (e.g. coefficients and standard errors) obtained from each analyzed data set are then combined for inference."
+
+So a proper strategy is to obtain the ideally final parameter estimates by combining the parameter estimates obtained from each analysis which may use different models.
+```{r}
+
+```
+
+
 ## Q2. Predicting 30-day mortality
 
 Develop at least two analytic approaches for predicting the 30-day mortality of patients admitted to ICU using demographic information (gender, age, marital status, ethnicity), first lab measurements during ICU stay, and first vital measurements during ICU stay. For example, you can use (1) logistic regression (`glm()` function in base R or keras), (2) logistic regression with lasso penalty (glmnet or keras package), (3) random forest (randomForest package), or (4) neural network (keras package).
