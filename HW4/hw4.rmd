@@ -229,6 +229,8 @@ plotVarImportance(miceObj)
 6. Choose one of the imputed data sets to be used in Q2. This is **not** a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy is.
 
 **Solutions:**
+I chosed the first data set to be used in Q2.
+
 reference: https://stats.oarc.ucla.edu/sas/seminars/multiple-imputation-in-sas/mi_new_1/
 "MI has three basic phases:
 
