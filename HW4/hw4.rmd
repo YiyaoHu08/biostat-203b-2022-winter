@@ -125,7 +125,7 @@ summary(icu_cohort)
 ```
 
 ```{r}
-# Check these four variables
+# Check these four numeric variables
 # 1) los  - values lager than 40 may be thought as error inputs (or Outlier?)
 summary(icu_cohort$los)
 hist(icu_cohort$los)
@@ -145,6 +145,8 @@ tail(sort(icu_cohort$vitalvaluenum),100)
 summary(icu_cohort$length)
 hist(icu_cohort$length)
 tail(sort(icu_cohort$length),100)
+
+table(icu_cohort$ethnicity)
 ```
 Replace these errors or outliers with N/A
 ```{r}
@@ -191,6 +193,38 @@ Save the imputation results as a file
 
 
 5. Make imputation diagnostic plots and explain what they mean.
+
+(1) Distribution of Imputed Values
+
+The red line is the density of the original, non-missing data. The smaller, black lines are the density of the imputed values in each of the datasets. It seems other than for "los", the curves don't match up for the other three predictors "labvalnum", "Vitalvalnum" and "length". But it is not a problem, and it just tell us our data was not Missing Completely at Random (MCAR).
+```{r}
+plotDistributions(miceObj,vars='allNumeric')
+```
+
+(2) Convergence of Correlation
+The plots show  box-plots of the correlations between the imputed values in every combination of datasets, at each iteration. 
+```{r}
+plotCorrelations(miceObj,vars='allNumeric')
+```
+
+(3) Center and Dispersion Convergence
+It seems the imputed data didn't converge very well and we may need to run more iterations.
+```{r}
+plotVarConvergence(miceObj,vars='allNumeric')
+```
+
+(4) Model OOB Error
+It looks like the variables were not imputed with a reasonable degree of accuracy 
+```{r}
+plotModelError(miceObj,vars='allNumeric')
+```
+
+(5) Variable Importance
+The plots shows the variable importance for each imputed variable.
+```{r}
+plotVarImportance(miceObj)
+```
+
 
 6. Choose one of the imputed data sets to be used in Q2. This is **not** a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy is.
 
