@@ -308,16 +308,19 @@ dim(icu_cohort)
 
 2. Train the 2 models using the training set.
 
-Model 1: GLM (thirty_day_mort ~ gender + age+ ethnicity + marital_status + labvaluenum +vitalvaluenum)
+Model 1: GLM (thirty_day_mort ~ gender + age+ ethnicity + marital_status + labvaluenum + as.factor(labitemid) + vitalvaluenum) + as.factor(vitalitemid)
 ```{r}
 training_set$gender <- as.factor(training_set$gender)
 training_set$ethnicity  <- as.factor(training_set$ethnicity )
 training_set$marital_status  <- as.factor(training_set$marital_status)
+training_set$labitemid <- as.factor(training_set$labitemid)
+training_set$vitalitemid <- as.factor(training_set$vitalitemid)
 
 
 model1 <- glm(thirty_day_mort ~ gender + age+ ethnicity + marital_status + 
-                   labvaluenum +vitalvaluenum, data = training_set, 
-                  family = 'binomial')
+                   labitemid + vitalitemid + labvaluenum +vitalvaluenum, 
+             data = training_set, 
+             family = 'binomial')
 
 summary(model1)
 ```
@@ -328,9 +331,9 @@ library(glmnet)
 set.seed(345) 
 modeldata <-  training_set %>% 
   select(thirty_day_mort, gender, age, ethnicity, marital_status, 
-                   labvaluenum, vitalvaluenum)
+                   labitemid, labvaluenum, vitalitemid, vitalvaluenum)
 
-# Dumy code categorical predictor variables
+# Dummy code categorical predictor variables
 x <- model.matrix(thirty_day_mort ~. , modeldata)[,-1]
 y <- modeldata$thirty_day_mort
 
@@ -343,7 +346,8 @@ model2 <- glmnet(x, y, alpha = 1, family = "binomial",
                 lambda = cv.lasso$lambda.min)
 
 # Display regression coefficients
-coef(model)
+coef(model1)
+coef(model2)
 ```
 
 
@@ -352,18 +356,54 @@ coef(model)
 The two models did the same well as for predictive accuracy.
 
 Model 1: 
+Overall accuracy of Prediction: 0.897
+Misclassification rate: 0.103
+Specificity: 0.897
+Sensitivity: 0.308
+AUC: 0.602
 ```{r}
 # Make predictions on the test data
-new_x <-  training_set %>% 
-  select(thirty_day_mort, gender, age, ethnicity, marital_status, 
-                   labvaluenum, vitalvaluenum)
+testing_set$gender <- as.factor(testing_set$gender)
+testing_set$ethnicity  <- as.factor(testing_set$ethnicity )
+testing_set$marital_status  <- as.factor(testing_set$marital_status)
+testing_set$labitemid <- as.factor(testing_set$labitemid)
+testing_set$vitalitemid <- as.factor(testing_set$vitalitemid)
 
-possibility <- predict(model1, newx=new_x,  type="response") # predicted values
+new_x <-  testing_set %>% 
+  select(thirty_day_mort, gender, age, ethnicity, marital_status, 
+         labitemid, labvaluenum, vitalitemid, vitalvaluenum)
+
+
+possibility <- predict(model1, newdata = new_x,  type="response") # predicted values
 predicted <- ifelse(possibility > 0.5, 1, 0)
 
-# Model accuracy
-observed <- training_set$thirty_day_mort
+
+
+# Model accuracy, specificity, sensitivity
+observed <- testing_set$thirty_day_mort
 mean(predicted == observed)
+
+
+# Performance metrics of binary classifier
+measure <- measureit(score = observed, class = predicted,
+                     measure = c("ACC", "MIS", "SENS", "SPEC"))
+print(measure)
+
+
+
+library(ROCit)
+roc_empirical <- rocit(score = observed, class = predicted) 
+summary(roc_empirical)
+
+message("Number of positive responses used: ", roc_empirical$pos_count)
+#> Number of positive responses used: 13
+message("Number of negative responses used: ", roc_empirical$neg_count)
+#> Number of negative responses used: 42457
+message("The AUC: ", roc_empirical$AUC)
+#> The AUC:0.602193893912574
+
+
+plot(roc_empirical, values = F)
 ```
 
 
@@ -372,15 +412,40 @@ Model 2:
 ```{r}
 # Make predictions on the test data
 # Dumy code categorical predictor variables
-modeldata2 <-  training_set %>% 
+modeldata2 <-  testing_set %>% 
   select(thirty_day_mort, gender, age, ethnicity, marital_status, 
-                   labvaluenum, vitalvaluenum)
+          labitemid, labvaluenum, vitalitemid, vitalvaluenum)
 x.test <- model.matrix(thirty_day_mort ~. , modeldata2)[,-1]
-probabilities <- model2 %>% predict(newx = x.test)
-predicted.classes <- ifelse(probabilities > 0.5, 1, 0)
+probabilities <- model2 %>% predict(newx = x.test, type = 'response')
+predicted_classes <- as.vector(ifelse(probabilities > 0.5, 1, 0))
+class(predicted)
+
+
 
 # Model accuracy
-observed.classes <- modeldata2$thirty_day_mort
+observed_classes <- modeldata2$thirty_day_mort
 mean(predicted.classes == observed.classes)
+
+# Performance metrics of binary classifier
+measure <- measureit(score = observed_classes, class = predicted_classes,
+                     measure = c("ACC", "MIS", "SENS", "SPEC"))
+print(measure)
+
+
+library(ROCit)
+roc_empirical <- rocit(score = observed_classes, class = predicted_classes) 
+summary(roc_empirical)
+
+message("Number of positive responses used: ", roc_empirical$pos_count)
+#> Number of positive responses used: 13
+message("Number of negative responses used: ", roc_empirical$neg_count)
+#> Number of negative responses used: 42457
+message("The AUC: ", roc_empirical$AUC)
+#> The AUC:0.602193893912574
+
+
+plot(roc_empirical, values = F)
+
 ```
+
 
