@@ -317,7 +317,7 @@ training_set$labitemid <- as.factor(training_set$labitemid)
 training_set$vitalitemid <- as.factor(training_set$vitalitemid)
 
 
-model1 <- glm(thirty_day_mort ~ gender + age+ ethnicity + marital_status + 
+model1 <- glm(as.factor(thirty_day_mort) ~ gender + age+ ethnicity + marital_status + 
                    labitemid + vitalitemid + labvaluenum +vitalvaluenum, 
              data = training_set, 
              family = 'binomial')
@@ -341,6 +341,8 @@ y <- modeldata$thirty_day_mort
 set.seed(123) 
 cv.lasso <- cv.glmnet(x, y, alpha = 1, family = "binomial")
 
+ predict( glmnet(x,y), s=ccv.lasso$lambda.min )
+
 # Fit the final model on the training data
 model2 <- glmnet(x, y, alpha = 1, family = "binomial",
                 lambda = cv.lasso$lambda.min)
@@ -351,16 +353,18 @@ coef(model2)
 ```
 
 
-3. Compare model prediction performance on the set.
+3. Compare model prediction performance on the test set.
 
 The two models did the same well as for predictive accuracy.
 
 Model 1: 
-Overall accuracy of Prediction: 0.897
-Misclassification rate: 0.103
-Specificity: 0.897
-Sensitivity: 0.308
-AUC: 0.602
+Overall accuracy of Prediction (AUC): 0.897 (cut-off = 0.23)
+Error rate: 0.121
+Specificity: 0.569 (cut-off = 0.095)
+Sensitivity: 0.709 (cut-off = 0.095)
+
+The plot shows at a threshold of 0.095, the corresponding sensitivity and specificity are 70.9% and 57% respectively, which means the
+model has a just so-so performance. In adtion, the error rate would be pretty high at this cut-off. So I adjusted the cut-off to 0.23 when using the fitted model to predict for the testing data set.
 ```{r}
 # Make predictions on the test data
 testing_set$gender <- as.factor(testing_set$gender)
@@ -368,84 +372,113 @@ testing_set$ethnicity  <- as.factor(testing_set$ethnicity )
 testing_set$marital_status  <- as.factor(testing_set$marital_status)
 testing_set$labitemid <- as.factor(testing_set$labitemid)
 testing_set$vitalitemid <- as.factor(testing_set$vitalitemid)
-
 new_x <-  testing_set %>% 
   select(thirty_day_mort, gender, age, ethnicity, marital_status, 
          labitemid, labvaluenum, vitalitemid, vitalvaluenum)
 
 
+# Performance metrics of binary classifier  -- find the cutoff = 0.23
+library(ROCit)
+measure <- measureit(score = model1$fitted.values, class =model1$y ,
+                     measure = c("ACC", "MIS", "SENS", "SPEC"))
+plot(measure$ACC~measure$Cutoff, type = "l")
+
+
+# After finding the cutoff, use it
 possibility <- predict(model1, newdata = new_x,  type="response") # predicted values
-predicted <- ifelse(possibility > 0.5, 1, 0)
+predicted <- ifelse(possibility > 0.23, 1, 0) #cutoff = 0.23
 
 
-
-# Model accuracy, specificity, sensitivity
+# Model accuracy, 
+# accuracy
 observed <- testing_set$thirty_day_mort
 mean(predicted == observed)
 
 
-# Performance metrics of binary classifier
-measure <- measureit(score = observed, class = predicted,
-                     measure = c("ACC", "MIS", "SENS", "SPEC"))
-print(measure)
-
-
-
-library(ROCit)
-roc_empirical <- rocit(score = observed, class = predicted) 
-summary(roc_empirical)
-
-message("Number of positive responses used: ", roc_empirical$pos_count)
-#> Number of positive responses used: 13
-message("Number of negative responses used: ", roc_empirical$neg_count)
-#> Number of negative responses used: 42457
-message("The AUC: ", roc_empirical$AUC)
-#> The AUC:0.602193893912574
-
-
-plot(roc_empirical, values = F)
 ```
 
 
+```{r}
+# ROC Curve, specificity, sensitivity
+library(pROC)
+modelroc <- roc(observed,possibility)
+plot(modelroc, print.auc=TRUE, auc.polygon=TRUE, grid=c(0.1, 0.2),
+     grid.col=c("green", "red"), max.auc.polygon=TRUE,
+     auc.polygon.col="skyblue", print.thres=TRUE)
+```
 
 Model 2:
+Overall accuracy of Prediction (AUC): 0.880 (cut-off = 0.23)
+Error rate: 0.120
+Specificity: 0.537 (cut-off = 0.091)
+Sensitivity: 0.740 (cut-off = 0.095)
+
+The plot shows at a threshold of 0.091, the corresponding sensitivity and specificity are 74% and 54% respectively, which means the
+model has a just so-so performance. In addition, the error rate would be pretty high at this cut-off. So I adjusted the cut-off to 0.23 when using the fitted model to predict for the testing data set. The final predictive accuracy is 88%.
+
+```{r}
+library(glmnet)
+set.seed(345) 
+modeldata <-  training_set %>% 
+  select(thirty_day_mort, gender, age, ethnicity, marital_status, 
+                   labitemid, labvaluenum, vitalitemid, vitalvaluenum)
+dim(modeldata)
+dim(modeldata2)
+
+# Dummy code categorical predictor variables
+x <- model.matrix(thirty_day_mort ~. , modeldata)[,-1]
+y <- modeldata$thirty_day_mort
+
+# Find the best lambda using cross-validation
+set.seed(123) 
+cv.lasso <- cv.glmnet(x, y, alpha = 1, family = "binomial")
+
+
+# Fit the final model on the training data
+model2 <- glmnet(x, y, alpha = 1, family = "binomial",
+                lambda = cv.lasso$lambda.min)
+
+# Display regression coefficients
+coef(model1)
+coef(model2)
+```
+
 ```{r}
 # Make predictions on the test data
-# Dumy code categorical predictor variables
 modeldata2 <-  testing_set %>% 
   select(thirty_day_mort, gender, age, ethnicity, marital_status, 
           labitemid, labvaluenum, vitalitemid, vitalvaluenum)
-x.test <- model.matrix(thirty_day_mort ~. , modeldata2)[,-1]
-probabilities <- model2 %>% predict(newx = x.test, type = 'response')
-predicted_classes <- as.vector(ifelse(probabilities > 0.5, 1, 0))
-class(predicted)
+
+# Dummy code categorical predictor variables
+x2 <- model.matrix(thirty_day_mort ~. , modeldata2)[,-1]
+y2 <- modeldata2$thirty_day_mort
+
+#x.test <- model.matrix(thirty_day_mort ~. , modeldata2)[,-1]
 
 
+# Performance metrics of binary classifier  -- find the cut-off is 0.23
+fitted_value <-as.vector(predict( glmnet(x,y),newx=x, s=cv.lasso$lambda.min ))
+y2 <- modeldata2$thirty_day_mort
 
+measure <- measureit(score = fitted_value, class = y ,
+                     measure = c("ACC", "MIS", "SENS", "SPEC"))
+plot(measure$ACC~measure$Cutoff, type = "l")
+
+
+# After finding the cutoff, use it
+probabilities <- model2 %>% predict(newx = x2, type = 'response') #predicted values
+predicted_classes <- as.vector(ifelse(probabilities > 0.23, 1, 0)) #cutoff = 0.23
 # Model accuracy
 observed_classes <- modeldata2$thirty_day_mort
-mean(predicted.classes == observed.classes)
-
-# Performance metrics of binary classifier
-measure <- measureit(score = observed_classes, class = predicted_classes,
-                     measure = c("ACC", "MIS", "SENS", "SPEC"))
-print(measure)
-
-
-library(ROCit)
-roc_empirical <- rocit(score = observed_classes, class = predicted_classes) 
-summary(roc_empirical)
-
-message("Number of positive responses used: ", roc_empirical$pos_count)
-#> Number of positive responses used: 13
-message("Number of negative responses used: ", roc_empirical$neg_count)
-#> Number of negative responses used: 42457
-message("The AUC: ", roc_empirical$AUC)
-#> The AUC:0.602193893912574
-
-
-plot(roc_empirical, values = F)
+mean(predicted_classes == observed_classes)
 
 ```
 
-
+```{r}
+# ROC Curve, specificity, sensitivity
+library(pROC)
+modelroc <- roc(observed_classes,probabilities)
+plot(modelroc, print.auc=TRUE, auc.polygon=TRUE, grid=c(0.1, 0.2),
+     grid.col=c("green", "red"), max.auc.polygon=TRUE,
+     auc.polygon.col="skyblue", print.thres=TRUE)
+```
