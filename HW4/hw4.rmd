@@ -1,11 +1,10 @@
 ---
 title: "Biostat 203B Homework 4"
+author: "Yiyao Hu"
 subtitle: Due Mar 18 @ 11:59PM
-author: Yiyao Hu
 output:
-  # ioslides_presentation: default
   html_document:
-    toc: true
+    toc: yes
     toc_depth: 4
 ---
 
@@ -28,12 +27,12 @@ suppressPackageStartupMessages(library(miceRanger))
 
 Through the Shiny app developed in HW3, we observe abundant missing values in the MIMIC-IV ICU cohort we created. In this question, we use multiple imputation to obtain a data set without missing values.
 
-0. Read following tutorials on the R package miceRanger for imputation: <https://github.com/farrellday/miceRanger>, <https://cran.r-project.org/web/packages/miceRanger/vignettes/miceAlgorithm.html>.
+### 0. Read following tutorials on the R package miceRanger for imputation: <https://github.com/farrellday/miceRanger>, <https://cran.r-project.org/web/packages/miceRanger/vignettes/miceAlgorithm.html>.
 
     A more thorough book treatment of the practical imputation strategies is the book [*_Flexible Imputation of Missing Data_*](https://stefvanbuuren.name/fimd/) by Stef van Buuren. 
 
 
-1. Explain the jargon MCAR, MAR, and MNAR.
+### 1. Explain the jargon MCAR, MAR, and MNAR.
 
 **Solutions:**
 
@@ -54,7 +53,7 @@ Finally, data are said to be missing not at random if the value of the unobserve
 
 
 
-2. Explain in a couple of sentences how the Multiple Imputation by Chained Equations (MICE) work.
+### 2. Explain in a couple of sentences how the Multiple Imputation by Chained Equations (MICE) work.
 
 **Solution:**
 
@@ -82,11 +81,11 @@ Common Use Cases of MICE
 
 
 
-3. Perform a data quality check of the ICU stays data. Discard variables with substantial missingness, say >5000 `NA`s. Replace apparent data entry errors by `NA`s.
+### 3. Perform a data quality check of the ICU stays data. Discard variables with substantial missingness, say >5000 `NA`s. Replace apparent data entry errors by `NA`s.
 
 Step 1: 
 
-Import `icustatys.csv.gz` as a tibble `icustays_tble`. 
+Import icu_cohort data
 ```{r}
 icu_cohort <- readRDS("~/Biostat-203b-winter-2022/HW4/icu_cohort.rds")
 ```
@@ -115,7 +114,7 @@ icu_cohort <- subset(icu_cohort, select = -c(deathtime, edregtime,
 
 Step 3:
 
-The summary shows the following variable might have error inpput:
+The summary shows the following four variables might have error inpput:
 
 1) los   2) labvaluenum  3) vitalvaluenum   4) length
 ```{r}
@@ -164,15 +163,15 @@ na_count2
 ```
 
 
-4. Impute missing values by `miceRanger` (request $m=3$ data sets). This step is computational intensive. Make sure to save the imputation results as a file. Hint: Setting `max.depth=10` in the `miceRanger` function may cut some computing time.
+### 4. Impute missing values by `miceRanger` (request $m=3$ data sets). This step is computational intensive. Make sure to save the imputation results as a file. Hint: Setting `max.depth=10` in the `miceRanger` function may cut some computing time.
 
 ```{r}
 #miceObj <- miceRanger(
-#      icu_cohort
+#     icu_cohort
 #    , m=3
 #    , returnModels = TRUE
 #    , verbose = FALSE
-#    , max.depth = 10
+#, max.depth = 10
 #  )
 ```
 
@@ -192,55 +191,58 @@ Save the imputation results as a file
 ```
 
 
-5. Make imputation diagnostic plots and explain what they mean.
+### 5. Make imputation diagnostic plots and explain what they mean.
 
 (1) Distribution of Imputed Values
 
 The red line is the density of the original, non-missing data. The smaller, black lines are the density of the imputed values in each of the datasets. It seems other than for "los", the curves don't match up for the other three predictors "labvalnum", "Vitalvalnum" and "length". But it is not a problem, and it just tell us our data was not Missing Completely at Random (MCAR).
 ```{r}
-plotDistributions(miceObj,vars='allNumeric')
+#plotDistributions(miceObj,vars='allNumeric')
 ```
 
 (2) Convergence of Correlation
 The plots show  box-plots of the correlations between the imputed values in every combination of datasets, at each iteration. 
 ```{r}
-plotCorrelations(miceObj,vars='allNumeric')
+#plotCorrelations(miceObj,vars='allNumeric')
 ```
 
 (3) Center and Dispersion Convergence
 It seems the imputed data didn't converge very well and we may need to run more iterations.
 ```{r}
-plotVarConvergence(miceObj,vars='allNumeric')
+#plotVarConvergence(miceObj,vars='allNumeric')
 ```
 
 (4) Model OOB Error
 It looks like the variables were not imputed with a reasonable degree of accuracy 
 ```{r}
-plotModelError(miceObj,vars='allNumeric')
+#plotModelError(miceObj,vars='allNumeric')
 ```
 
 (5) Variable Importance
 The plots shows the variable importance for each imputed variable.
 ```{r}
-plotVarImportance(miceObj)
+#plotVarImportance(miceObj)
 ```
 
 
-6. Choose one of the imputed data sets to be used in Q2. This is **not** a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy is.
+### 6. Choose one of the imputed data sets to be used in Q2. This is **not** a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy is.
 
 **Solutions:**
-I chosed the first data set to be used in Q2.
+I chose the first data set to be used in Q2.
 
 reference: https://stats.oarc.ucla.edu/sas/seminars/multiple-imputation-in-sas/mi_new_1/
-"MI has three basic phases:
 
-1. Imputation or Fill-in Phase: The missing data are filled in with estimated values and a complete data set is created. This process of fill-in is repeated m times.
+The results obtained from the imputed data sets must be pooled in order to obtain a set of final parameter estimates and inferences. So a proper strategy is to obtain the ideally final parameter estimates by combining the parameter estimates obtained from each analysis which may use different models.  
 
-2. Analysis Phase: Each of the m complete data sets is then analyzed using a statistical method of interest (e.g. linear regression).
+"MI" has three basic phases:
 
-3. Pooling Phase: The parameter estimates (e.g. coefficients and standard errors) obtained from each analyzed data set are then combined for inference."
+a. Imputation or Fill-in Phase: The missing data are filled in with estimated values and a complete data set is created. This process of fill-in is repeated m times.
 
-So a proper strategy is to obtain the ideally final parameter estimates by combining the parameter estimates obtained from each analysis which may use different models.
+b. Analysis Phase: Each of the m complete data sets is then analyzed using a statistical method of interest (e.g. linear regression).
+
+c. Pooling Phase: The parameter estimates (e.g. coefficients and standard errors) obtained from each analyzed data set are then combined for inference."
+
+
 
 
 
@@ -248,7 +250,8 @@ So a proper strategy is to obtain the ideally final parameter estimates by combi
 
 Develop at least two analytic approaches for predicting the 30-day mortality of patients admitted to ICU using demographic information (gender, age, marital status, ethnicity), first lab measurements during ICU stay, and first vital measurements during ICU stay. For example, you can use (1) logistic regression (`glm()` function in base R or keras), (2) logistic regression with lasso penalty (glmnet or keras package), (3) random forest (randomForest package), or (4) neural network (keras package).
 
-1. Partition data into 80% training set and 20% test set. Stratify partitioning according the 30-day mortality status.
+
+### 1. Partition data into 80% training set and 20% test set. Stratify partitioning according the 30-day mortality status.
 ```{r}
  load("~/Biostat-203b-winter-2022/HW4/imputed_data1.RData")
 #stratify the data into two groups according to the binary variable
@@ -306,9 +309,9 @@ dim(icu_cohort)
 ```
 
 
-2. Train the 2 models using the training set.
+### 2. Train the 2 models using the training set.
 
-Model 1: GLM (thirty_day_mort ~ gender + age+ ethnicity + marital_status + labvaluenum + as.factor(labitemid) + vitalvaluenum) + as.factor(vitalitemid)
+#### Model 1: GLM (thirty_day_mort ~ gender + age+ ethnicity + marital_status + labvaluenum + as.factor(labitemid) + vitalvaluenum) + as.factor(vitalitemid)
 ```{r}
 training_set$gender <- as.factor(training_set$gender)
 training_set$ethnicity  <- as.factor(training_set$ethnicity )
@@ -325,7 +328,7 @@ model1 <- glm(as.factor(thirty_day_mort) ~ gender + age+ ethnicity + marital_sta
 summary(model1)
 ```
 
-Model 2: Fit the lasso penalized regression model:
+#### Model 2: Fit the lasso penalized logistic regression model:
 ```{r}
 library(glmnet)
 set.seed(345) 
@@ -341,7 +344,6 @@ y <- modeldata$thirty_day_mort
 set.seed(123) 
 cv.lasso <- cv.glmnet(x, y, alpha = 1, family = "binomial")
 
- predict( glmnet(x,y), s=ccv.lasso$lambda.min )
 
 # Fit the final model on the training data
 model2 <- glmnet(x, y, alpha = 1, family = "binomial",
@@ -353,18 +355,22 @@ coef(model2)
 ```
 
 
-3. Compare model prediction performance on the test set.
 
-The two models did the same well as for predictive accuracy.
 
-Model 1: 
+
+
+### 3. Compare model prediction performance on the test set.
+
+#### Model 1: 
 Overall accuracy of Prediction (AUC): 0.897 (cut-off = 0.23)
+
 Error rate: 0.121
+
 Specificity: 0.569 (cut-off = 0.095)
+
 Sensitivity: 0.709 (cut-off = 0.095)
 
-The plot shows at a threshold of 0.095, the corresponding sensitivity and specificity are 70.9% and 57% respectively, which means the
-model has a just so-so performance. In adtion, the error rate would be pretty high at this cut-off. So I adjusted the cut-off to 0.23 when using the fitted model to predict for the testing data set.
+The plot shows at a threshold of 0.095, the corresponding sensitivity and specificity are 70.9% and 57% respectively, which means the model has a just so-so performance. In addition, the error rate would be pretty high at this cut-off. So I adjusted the cut-off to 0.23 when using the fitted model to predict for the testing data set.
 ```{r}
 # Make predictions on the test data
 testing_set$gender <- as.factor(testing_set$gender)
@@ -407,14 +413,16 @@ plot(modelroc, print.auc=TRUE, auc.polygon=TRUE, grid=c(0.1, 0.2),
      auc.polygon.col="skyblue", print.thres=TRUE)
 ```
 
-Model 2:
+#### Model 2:
 Overall accuracy of Prediction (AUC): 0.880 (cut-off = 0.23)
+
 Error rate: 0.120
+
 Specificity: 0.537 (cut-off = 0.091)
+
 Sensitivity: 0.740 (cut-off = 0.095)
 
-The plot shows at a threshold of 0.091, the corresponding sensitivity and specificity are 74% and 54% respectively, which means the
-model has a just so-so performance. In addition, the error rate would be pretty high at this cut-off. So I adjusted the cut-off to 0.23 when using the fitted model to predict for the testing data set. The final predictive accuracy is 88%.
+The plot shows at a threshold of 0.091, the corresponding sensitivity and specificity are 74% and 54% respectively, which means the model has a just so-so performance. In addition, the error rate would be pretty high at this cut-off. So I adjusted the cut-off to 0.23 when using the fitted model to predict for the testing data set. The final predictive accuracy is 88%.
 
 ```{r}
 library(glmnet)
@@ -422,8 +430,6 @@ set.seed(345)
 modeldata <-  training_set %>% 
   select(thirty_day_mort, gender, age, ethnicity, marital_status, 
                    labitemid, labvaluenum, vitalitemid, vitalvaluenum)
-dim(modeldata)
-dim(modeldata2)
 
 # Dummy code categorical predictor variables
 x <- model.matrix(thirty_day_mort ~. , modeldata)[,-1]
@@ -481,4 +487,8 @@ modelroc <- roc(observed_classes,probabilities)
 plot(modelroc, print.auc=TRUE, auc.polygon=TRUE, grid=c(0.1, 0.2),
      grid.col=c("green", "red"), max.auc.polygon=TRUE,
      auc.polygon.col="skyblue", print.thres=TRUE)
+
 ```
+
+
+
