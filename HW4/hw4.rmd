@@ -157,7 +157,11 @@ icu_cohort$length[icu_cohort$length>100]  <- NA
 
 Check the missing info for the upadted table
 ```{r}
+<<<<<<< HEAD
 na_count2 <- sapply(icu_cohort, function(x) sum(is.na(x)))
+=======
+na_count2 <-sapply(icu_cohort, function(x) sum(is.na(x)))
+>>>>>>> 42b30cc55c4f888f9fe95af37d015bea487d0f70
 na_count2 <- data.frame(na_count2)
 na_count2
 ```
@@ -171,16 +175,22 @@ na_count2
 #    , m=3
 #    , returnModels = TRUE
 #    , verbose = FALSE
+<<<<<<< HEAD
 #    , max.depth = 10
 #   )
 # write_rds(miceObj, file = "miceObj.rds")
 
 miceObj <- read_rds("~/Biostat-203b-winter-2022/HW4/miceObj.rds")
 class(miceObj)
+=======
+#, max.depth = 10
+#  )
+>>>>>>> 42b30cc55c4f888f9fe95af37d015bea487d0f70
 ```
 
 Save the imputation results as a file
 ```{r}
+<<<<<<< HEAD
 
 
 #imputed_data1 = dataList$Dataset_1
@@ -191,12 +201,27 @@ Save the imputation results as a file
 
 ```
 
+=======
+#dataList <- completeData(miceObj)
+#imputed_data1 = dataList$Dataset_1
+#imputed_data2 = dataList$Dataset_2
+#imputed_data3 = dataList$Dataset_3
+#save(imputed_data1, imputed_data2, imputed_data3, file = "imputed_data.RData")
+```
+
+```{r}
+#na_count3 <-sapply(imputed_data1, function(x) sum(is.na(x)))
+#na_count3 <- data.frame(na_count3)
+#na_count3
+```
+>>>>>>> 42b30cc55c4f888f9fe95af37d015bea487d0f70
 
 
 ### 5. Make imputation diagnostic plots and explain what they mean.
 
 (1) Distribution of Imputed Values
 
+<<<<<<< HEAD
 The red line is the density of the original, non-missing data. The smaller, black lines are the density of the imputed values in each of the datasets. It seems other than "los", the curves don't match up for the other three predictors "labvalnum", "Vitalvalnum" and "length". But it is not a problem, and it just tell us our data was not Missing Completely at Random (MCAR).
 ```{r}
 plotDistributions(miceObj ,vars='allNumeric')
@@ -226,6 +251,35 @@ plotModelError(miceObj,vars = 'allNumeric')
 The plots showed the variable importance for each imputed variable.
 ```{r}
 plotVarImportance(miceObj)
+=======
+The red line is the density of the original, non-missing data. The smaller, black lines are the density of the imputed values in each of the datasets. It seems other than for "los", the curves don't match up for the other three predictors "labvalnum", "Vitalvalnum" and "length". But it is not a problem, and it just tell us our data was not Missing Completely at Random (MCAR).
+```{r}
+#plotDistributions(miceObj,vars='allNumeric')
+```
+
+(2) Convergence of Correlation
+The plots show  box-plots of the correlations between the imputed values in every combination of datasets, at each iteration. 
+```{r}
+#plotCorrelations(miceObj,vars='allNumeric')
+```
+
+(3) Center and Dispersion Convergence
+It seems the imputed data didn't converge very well and we may need to run more iterations.
+```{r}
+#plotVarConvergence(miceObj,vars='allNumeric')
+```
+
+(4) Model OOB Error
+It looks like the variables were not imputed with a reasonable degree of accuracy 
+```{r}
+#plotModelError(miceObj,vars='allNumeric')
+```
+
+(5) Variable Importance
+The plots shows the variable importance for each imputed variable.
+```{r}
+#plotVarImportance(miceObj)
+>>>>>>> 42b30cc55c4f888f9fe95af37d015bea487d0f70
 ```
 
 
@@ -495,5 +549,8 @@ plot(modelroc, print.auc=TRUE, auc.polygon=TRUE, grid=c(0.1, 0.2),
 ```
 
 
+<<<<<<< HEAD
 In conclusion, the two models have about the same good performance in predictions. 
+=======
+>>>>>>> 42b30cc55c4f888f9fe95af37d015bea487d0f70
 
