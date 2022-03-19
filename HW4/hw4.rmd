@@ -1,0 +1,499 @@
+---
+title: "Biostat 203B Homework 4"
+author: "Yiyao Hu"
+subtitle: Due Mar 18 @ 11:59PM
+output:
+  html_document:
+    toc: yes
+    toc_depth: 4
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+Display machine information:
+```{r}
+sessionInfo()
+```
+Load database libraries and the tidyverse frontend:
+```{r}
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(lubridate))
+suppressPackageStartupMessages(library(miceRanger))
+```
+
+## Q1. Missing data
+
+Through the Shiny app developed in HW3, we observe abundant missing values in the MIMIC-IV ICU cohort we created. In this question, we use multiple imputation to obtain a data set without missing values.
+
+### 0. Read following tutorials on the R package miceRanger for imputation: <https://github.com/farrellday/miceRanger>, <https://cran.r-project.org/web/packages/miceRanger/vignettes/miceAlgorithm.html>.
+
+    A more thorough book treatment of the practical imputation strategies is the book [*_Flexible Imputation of Missing Data_*](https://stefvanbuuren.name/fimd/) by Stef van Buuren. 
+
+
+### 1. Explain the jargon MCAR, MAR, and MNAR.
+
+**Solutions:**
+
+Reference: https://stats.oarc.ucla.edu/stata/seminars/mi_in_stata_pt1_new 
+
+"Missing completely at random (MCAR)
+A variable is missing completely at random, if neither the variables in the dataset nor the unobserved value of the variable itself predict whether a value will be missing. Missing completely at random is a fairly strong assumption and may be relatively rare. One relatively common situation in which data are missing completely at random occurs when a subset of cases is randomly selected to undergo additional measurement, this is sometimes referred to as “planned missing.” For example, in some health surveys, some subjects are randomly selected to undergo more extensive physical examination; therefore only a subset of participants will have complete information for these variables. Missing completely at random also allow for missing on one variable to be related to missing on another, e.g. var1 is missing whenever var2 is missing. For example, a husband and wife are both missing information on height."
+
+"Missing at random (MAR)
+A variable is said to be missing at random if other variables (but not the variable itself) in the dataset can be used to predict missingness on a given variable. For example, in surveys, men may be more likely to decline to answer some questions than women (i.e., gender predicts missingness on another variable). MAR is a less restrictive assumption than MCAR.  Under this assumption the probability of missingness does not depend on the true values after controlling for the observed variables. MAR is also related to ignorability. The missing data mechanism is said be ignorable if it is missing at random and the probability of a missingness does not depend on the missing information itself. The assumption of ignorability is needed for optimal estimation of missing information and is a required assumption for both of the missing data techniques we will discuss."
+
+"Missing not at random (MNAR)
+Finally, data are said to be missing not at random if the value of the unobserved variable itself predicts missingness. A classic example of this is income.  Individuals with very high incomes are more likely to decline to answer questions about their income than individuals with more moderate incomes."
+
+"An understanding of the missing data mechanism(s) present in your data is important because different types of missing data require different treatments. When data are missing completely at random, analyzing only the complete cases will not result in biased parameter estimates (e.g., regression coefficients). However, the sample size for an analysis can be substantially reduced, leading to larger standard errors. In contrast, analyzing only complete cases for data that are either missing at random, or missing not at random can lead to biased parameter estimates. Multiple imputation and other modern methods such as direct maximum likelihood generally assumes that the data are at least MAR, meaning that this procedure can also be used on data that are missing completely at random. Statistical models have also been developed for modeling the MNAR processes; however, these model are beyond the scope of this seminar."
+
+
+
+
+
+### 2. Explain in a couple of sentences how the Multiple Imputation by Chained Equations (MICE) work.
+
+**Solution:**
+
+Reference: 
+
+           1) https://stats.oarc.ucla.edu/stata/seminars/mi_in_stata_pt1_new 
+
+           2) https://cran.r-project.org/web/packages/miceRanger/vignettes/miceAlgorithm.html
+           
+           3）https://github.com/farrellday/miceRanger
+           
+           4）https://www.rdocumentation.org/packages/miceRanger/versions/1.3.4/topics/miceRanger 
+
+Overall Principle:
+
+"miceRanger can make use of a procedure called predictive mean matching (PMM) to select which values are imputed. PMM involves selecting a datapoint from the original, nonmissing data which has a predicted value close to the predicted value of the missing sample. The closest N (meanMatchCandidates parameter in miceRanger()) values are chosen as candidates, from which a value is chosen at random. "
+
+
+This method is very useful if you have a variable which needs imputing which has any of the following characteristics: Multimodal, Integer, Skewed
+
+Common Use Cases of MICE
+1) Data Leakage 2) Integer  3) Skewed
+
+
+
+
+
+### 3. Perform a data quality check of the ICU stays data. Discard variables with substantial missingness, say >5000 `NA`s. Replace apparent data entry errors by `NA`s.
+
+Step 1: 
+
+Import icu_cohort data
+```{r}
+icu_cohort <- readRDS("~/Biostat-203b-winter-2022/HW4/icu_cohort.rds")
+```
+
+Step 2:
+
+Perform a data quality check of the ICU stays data and drop variables with substantial missing data.
+
+The following variables have substantial missingness (> 5000 NAS):
+```{r}
+na_count <-sapply(icu_cohort, function(x) sum(is.na(x)))
+na_count <- data.frame(na_count)
+na_count
+```
+
+```{r}
+# get names of variables with substantial missingness (>5000 NAs)
+Miss_var <-row.names(na_count)[apply(na_count, 2, function(i) which(i > 5000))]
+Miss_var
+
+
+# Drop these variables from the table
+icu_cohort <- subset(icu_cohort, select = -c(deathtime, edregtime,
+                                             edouttime, dod))
+```
+
+Step 3:
+
+The summary shows the following four variables might have error inpput:
+
+1) los   2) labvaluenum  3) vitalvaluenum   4) length
+```{r}
+# Check basic info of each of the 33 variables
+dim(icu_cohort)
+summary(icu_cohort)
+```
+
+```{r}
+# Check these four numeric variables
+# 1) los  - values lager than 40 may be thought as error inputs (or Outlier?)
+summary(icu_cohort$los)
+hist(icu_cohort$los)
+tail(sort(icu_cohort$los),100)
+
+# 2) labvaluenum - values lager than 200 cmay be thought as error (Outlier?)
+summary(icu_cohort$labvaluenum)
+hist(icu_cohort$labvaluenum)
+tail(sort(icu_cohort$labvaluenum),100)
+
+# 3) vitalvalunum - the value of 3333330 must be wrong
+summary(icu_cohort$vitalvaluenum)
+hist(icu_cohort$vitalvaluenum)
+tail(sort(icu_cohort$vitalvaluenum),100)
+
+# 4) length-values lager than 100 may be thought as error inputs (or Outlier?)
+summary(icu_cohort$length)
+hist(icu_cohort$length)
+tail(sort(icu_cohort$length),100)
+
+table(icu_cohort$ethnicity)
+```
+Replace these errors or outliers with N/A
+```{r}
+icu_cohort$los[icu_cohort$los > 40]  <- NA
+icu_cohort$labvaluenum[icu_cohort$labvaluenum > 200]  <- NA
+icu_cohort$vitalvaluenum[icu_cohort$vitalvaluenum>1000]  <- NA
+icu_cohort$length[icu_cohort$length>100]  <- NA
+```
+
+Check the missing info for the upadted table
+```{r}
+na_count2 <- sapply(icu_cohort, function(x) sum(is.na(x)))
+na_count2 <- data.frame(na_count2)
+na_count2
+```
+
+
+### 4. Impute missing values by `miceRanger` (request $m=3$ data sets). This step is computational intensive. Make sure to save the imputation results as a file. Hint: Setting `max.depth=10` in the `miceRanger` function may cut some computing time.
+
+```{r}
+#miceObj <- miceRanger(
+#     icu_cohort
+#    , m=3
+#    , returnModels = TRUE
+#    , verbose = FALSE
+#    , max.depth = 10
+#   )
+# write_rds(miceObj, file = "miceObj.rds")
+
+miceObj <- read_rds("~/Biostat-203b-winter-2022/HW4/miceObj.rds")
+class(miceObj)
+```
+
+Save the imputation results as a file
+```{r}
+
+
+#imputed_data1 = dataList$Dataset_1
+#imputed_data2 = dataList$Dataset_2
+#imputed_data3 = dataList$Dataset_3
+#save(imputed_data1, imputed_data2, imputed_data3, file = "imputed_data.rds")
+
+
+```
+
+
+
+### 5. Make imputation diagnostic plots and explain what they mean.
+
+(1) Distribution of Imputed Values
+
+The red line is the density of the original, non-missing data. The smaller, black lines are the density of the imputed values in each of the datasets. It seems other than "los", the curves don't match up for the other three predictors "labvalnum", "Vitalvalnum" and "length". But it is not a problem, and it just tell us our data was not Missing Completely at Random (MCAR).
+```{r}
+plotDistributions(miceObj ,vars='allNumeric')
+```
+
+(2) Convergence of Correlation
+The plots show  box-plots of the correlations between the imputed values in every combination of datasets, at each iteration. It seemed our values between datasets didn't converge very well over the first five iterations
+```{r}
+plotCorrelations(miceObj,vars = 'allNumeric')
+```
+
+(3) Center and Dispersion Convergence
+It seemed the imputed data didn't converge very well and we may need to run more iterations.
+```{r}
+plotVarConvergence(miceObj,vars = 'allNumeric')
+```
+
+(4) Model OOB Error
+"Random Forests give us a cheap way to determine model error without cross validation. Each model returns the OOB accuracy for classification, and r-squared for regression. We can see how these converged as the iterations progress."
+
+It looked like the variables were not imputed with a reasonable degree of accuracy 
+```{r}
+plotModelError(miceObj,vars = 'allNumeric')
+```
+
+(5) Variable Importance
+The plots showed the variable importance for each imputed variable.
+```{r}
+plotVarImportance(miceObj)
+```
+
+
+### 6. Choose one of the imputed data sets to be used in Q2. This is **not** a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy is.
+
+**Solutions:**
+I chose the first data set to be used in Q2.
+
+reference: https://stats.oarc.ucla.edu/sas/seminars/multiple-imputation-in-sas/mi_new_1/
+
+The results obtained from the imputed data sets must be pooled in order to obtain a set of final parameter estimates and inferences. So a proper strategy is to obtain the ideally final parameter estimates by combining the parameter estimates obtained from each analysis which may use different models.  
+
+"MI" has three basic phases:
+
+a. Imputation or Fill-in Phase: The missing data are filled in with estimated values and a complete data set is created. This process of fill-in is repeated m times.
+
+b. Analysis Phase: Each of the m complete data sets is then analyzed using a statistical method of interest (e.g. linear regression).
+
+c. Pooling Phase: The parameter estimates (e.g. coefficients and standard errors) obtained from each analyzed data set are then combined for inference."
+
+
+
+
+
+## Q2. Predicting 30-day mortality
+
+Develop at least two analytic approaches for predicting the 30-day mortality of patients admitted to ICU using demographic information (gender, age, marital status, ethnicity), first lab measurements during ICU stay, and first vital measurements during ICU stay. For example, you can use (1) logistic regression (`glm()` function in base R or keras), (2) logistic regression with lasso penalty (glmnet or keras package), (3) random forest (randomForest package), or (4) neural network (keras package).
+
+
+### 1. Partition data into 80% training set and 20% test set. Stratify partitioning according the 30-day mortality status.
+```{r}
+ load("~/Biostat-203b-winter-2022/HW4/imputed_data1.RData")
+#stratify the data into two groups according to the binary variable
+
+set.seed(123)
+imputed_data1 <- imputed_data1 %>% 
+  mutate(age = anchor_age + year(admittime) - anchor_year)
+thiry_day_mortality_status0 <- imputed_data1[imputed_data1$thirty_day_mort == 0]
+thiry_day_mortality_status1 <- imputed_data1[imputed_data1$thirty_day_mort == 1]
+dim(thiry_day_mortality_status0)
+dim(thiry_day_mortality_status1)
+
+
+
+## for thiry_day_mortality_status = 0
+# Get the number of observations
+n_obs0 <- nrow(thiry_day_mortality_status0)
+# Shuffle row indices: permuted_rows
+permuted_rows0 <- sample(n_obs0)
+# Randomly order data
+my_data0 <- thiry_day_mortality_status0[permuted_rows0, ]
+# Identify row to split on: split
+split0 <- n_obs0 *0.8
+# Training set + Test set
+train_data0 <- thiry_day_mortality_status0[ 1:split0, ]
+test_data0 <- thiry_day_mortality_status0[(split0+1):n_obs0, ]
+dim(thiry_day_mortality_status0)
+dim(train_data0)
+dim(test_data0)
+
+
+## for thiry_day_mortality_status = 1
+# Get the number of observations
+n_obs1 <- nrow(thiry_day_mortality_status1)
+# Shuffle row indices: permuted_rows
+permuted_rows1 <- sample(n_obs1)
+# Randomly order data
+my_data1 <- thiry_day_mortality_status1[permuted_rows1, ]
+# Identify row to split on: split
+split1 <- round(n_obs1 *0.8)
+# Training set + Test set
+train_data1 <- thiry_day_mortality_status1[ 1:split1, ]
+test_data1 <- thiry_day_mortality_status1[(split1+1):(n_obs1), ]
+dim(thiry_day_mortality_status1)
+dim(train_data1)
+dim(test_data1)
+
+
+# Assmble the training and testing sets
+training_set <- rbind(train_data0, train_data1)
+dim(training_set)
+testing_set <- rbind(test_data0, test_data1)
+dim(testing_set)
+dim(icu_cohort)
+```
+
+
+### 2. Train the 2 models using the training set.
+
+#### Model 1: GLM (thirty_day_mort ~ gender + age+ ethnicity + marital_status + labvaluenum + as.factor(labitemid) + vitalvaluenum) + as.factor(vitalitemid)
+```{r}
+training_set$gender <- as.factor(training_set$gender)
+training_set$ethnicity  <- as.factor(training_set$ethnicity )
+training_set$marital_status  <- as.factor(training_set$marital_status)
+training_set$labitemid <- as.factor(training_set$labitemid)
+training_set$vitalitemid <- as.factor(training_set$vitalitemid)
+
+
+model1 <- glm(as.factor(thirty_day_mort) ~ gender + age+ ethnicity + marital_status + 
+                   labitemid + vitalitemid + labvaluenum +vitalvaluenum, 
+             data = training_set, 
+             family = 'binomial')
+
+summary(model1)
+```
+
+#### Model 2: Fit the lasso penalized logistic regression model:
+```{r}
+library(glmnet)
+set.seed(345) 
+modeldata <-  training_set %>% 
+  select(thirty_day_mort, gender, age, ethnicity, marital_status, 
+                   labitemid, labvaluenum, vitalitemid, vitalvaluenum)
+
+# Dummy code categorical predictor variables
+x <- model.matrix(thirty_day_mort ~. , modeldata)[,-1]
+y <- modeldata$thirty_day_mort
+
+# Find the best lambda using cross-validation
+set.seed(123) 
+cv.lasso <- cv.glmnet(x, y, alpha = 1, family = "binomial")
+
+
+# Fit the final model on the training data
+model2 <- glmnet(x, y, alpha = 1, family = "binomial",
+                lambda = cv.lasso$lambda.min)
+
+# Display regression coefficients
+coef(model1)
+coef(model2)
+```
+
+
+
+
+
+
+### 3. Compare model prediction performance on the test set.
+
+#### Model 1: 
+Overall accuracy of Prediction (AUC): 0.897 (cut-off = 0.23)
+
+Error rate: 0.121
+
+Specificity: 0.569 (cut-off = 0.095)
+
+Sensitivity: 0.709 (cut-off = 0.095)
+
+The plot shows at a threshold of 0.095, the corresponding sensitivity and specificity are 70.9% and 57% respectively, which means the model has a just so-so performance. In addition, the error rate would be pretty high at this cut-off. So I adjusted the cut-off to 0.23 when using the fitted model to predict for the testing data set.
+```{r}
+# Make predictions on the test data
+testing_set$gender <- as.factor(testing_set$gender)
+testing_set$ethnicity  <- as.factor(testing_set$ethnicity )
+testing_set$marital_status  <- as.factor(testing_set$marital_status)
+testing_set$labitemid <- as.factor(testing_set$labitemid)
+testing_set$vitalitemid <- as.factor(testing_set$vitalitemid)
+new_x <-  testing_set %>% 
+  select(thirty_day_mort, gender, age, ethnicity, marital_status, 
+         labitemid, labvaluenum, vitalitemid, vitalvaluenum)
+
+
+# Performance metrics of binary classifier  -- find the cutoff = 0.23
+library(ROCit)
+measure <- measureit(score = model1$fitted.values, class =model1$y ,
+                     measure = c("ACC", "MIS", "SENS", "SPEC"))
+plot(measure$ACC~measure$Cutoff, type = "l")
+
+
+# After finding the cutoff, use it
+possibility <- predict(model1, newdata = new_x,  type="response") # predicted values
+predicted <- ifelse(possibility > 0.23, 1, 0) #cutoff = 0.23
+
+
+# Model accuracy, 
+# accuracy
+observed <- testing_set$thirty_day_mort
+mean(predicted == observed)
+
+
+```
+
+
+```{r}
+# ROC Curve, specificity, sensitivity
+library(pROC)
+modelroc <- roc(observed,possibility)
+plot(modelroc, print.auc=TRUE, auc.polygon=TRUE, grid=c(0.1, 0.2),
+     grid.col=c("green", "red"), max.auc.polygon=TRUE,
+     auc.polygon.col="skyblue", print.thres=TRUE)
+```
+
+#### Model 2:
+Overall accuracy of Prediction (AUC): 0.880 (cut-off = 0.23)
+
+Error rate: 0.120
+
+Specificity: 0.537 (cut-off = 0.091)
+
+Sensitivity: 0.740 (cut-off = 0.095)
+
+The plot shows at a threshold of 0.091, the corresponding sensitivity and specificity are 74% and 54% respectively, which means the model has a just so-so performance. In addition, the error rate would be pretty high at this cut-off. So I adjusted the cut-off to 0.23 when using the fitted model to predict for the testing data set. The final predictive accuracy is 88%.
+
+```{r}
+library(glmnet)
+set.seed(345) 
+modeldata <-  training_set %>% 
+  select(thirty_day_mort, gender, age, ethnicity, marital_status, 
+                   labitemid, labvaluenum, vitalitemid, vitalvaluenum)
+
+# Dummy code categorical predictor variables
+x <- model.matrix(thirty_day_mort ~. , modeldata)[,-1]
+y <- modeldata$thirty_day_mort
+
+# Find the best lambda using cross-validation
+set.seed(123) 
+cv.lasso <- cv.glmnet(x, y, alpha = 1, family = "binomial")
+
+
+# Fit the final model on the training data
+model2 <- glmnet(x, y, alpha = 1, family = "binomial",
+                lambda = cv.lasso$lambda.min)
+
+# Display regression coefficients
+coef(model1)
+coef(model2)
+```
+
+```{r}
+# Make predictions on the test data
+modeldata2 <-  testing_set %>% 
+  select(thirty_day_mort, gender, age, ethnicity, marital_status, 
+          labitemid, labvaluenum, vitalitemid, vitalvaluenum)
+
+# Dummy code categorical predictor variables
+x2 <- model.matrix(thirty_day_mort ~. , modeldata2)[,-1]
+y2 <- modeldata2$thirty_day_mort
+
+#x.test <- model.matrix(thirty_day_mort ~. , modeldata2)[,-1]
+
+
+# Performance metrics of binary classifier  -- find the cut-off is 0.23
+fitted_value <-as.vector(predict( glmnet(x,y),newx=x, s=cv.lasso$lambda.min ))
+y2 <- modeldata2$thirty_day_mort
+
+measure <- measureit(score = fitted_value, class = y ,
+                     measure = c("ACC", "MIS", "SENS", "SPEC"))
+plot(measure$ACC~measure$Cutoff, type = "l")
+
+
+# After finding the cutoff, use it
+probabilities <- model2 %>% predict(newx = x2, type = 'response') #predicted values
+predicted_classes <- as.vector(ifelse(probabilities > 0.23, 1, 0)) #cutoff = 0.23
+# Model accuracy
+observed_classes <- modeldata2$thirty_day_mort
+mean(predicted_classes == observed_classes)
+
+```
+
+```{r}
+# ROC Curve, specificity, sensitivity
+library(pROC)
+modelroc <- roc(observed_classes,probabilities)
+plot(modelroc, print.auc=TRUE, auc.polygon=TRUE, grid=c(0.1, 0.2),
+     grid.col=c("green", "red"), max.auc.polygon=TRUE,
+     auc.polygon.col="skyblue", print.thres=TRUE)
+
+```
+
+
+In conclusion, the two models have about the same good performance in predictions. 
+
